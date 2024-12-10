@@ -1,17 +1,12 @@
 import { useState, useEffect } from 'react';
-import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { ethers } from 'ethers';
 import { useAtom } from 'jotai';
 import { userInfoAtom } from '@/store/userInfo';
 import { useNavigate } from 'react-router-dom';
-import { LPStaking, LPStaking__factory } from '@/typechain-types';
-
-const STAKING_CONTRACT_ADDRESS = import.meta.env.STAKING_CONTRACT_ADDRESS as string;
+import { useContract } from '@/providers/ContractProvider';
 
 const Admin: React.FC = () => {
   const navigate = useNavigate();
-  const [provider, setProvider] = useState<ethers.BrowserProvider | null>(null);
-  const [stakingContract, setStakingContract] = useState<LPStaking | null>(null);
   const [newDailyRate, setNewDailyRate] = useState<string>('0');
   const [newPairAddress, setNewPairAddress] = useState<string>('');
   const [newPairPlatform, setNewPairPlatform] = useState<string>('');
@@ -22,40 +17,30 @@ const Admin: React.FC = () => {
   const [actionDetails, setActionDetails] = useState<any>();
   const [userInfo, setUserInfo] = useAtom(userInfoAtom);
 
-  useEffect(() => {
-    async function init() {
-      if (window.ethereum) {
-        const provider = new ethers.BrowserProvider(window.ethereum);
-        setProvider(provider);
-        const signer = await provider.getSigner();
-        const contract = LPStaking__factory.connect(STAKING_CONTRACT_ADDRESS, signer);
-        setStakingContract(contract);
-      }
-    }
-    init();
-  }, []);
+  const { contract, isLoading, error } = useContract();
 
   useEffect(() => {
+    console.log('contract', contract);
     async function loadContractData() {
-      if (stakingContract) {
-        const counter = await stakingContract.actionCounter();
-        const approvals = await stakingContract.REQUIRED_APPROVALS();
+      if (contract) {
+        const counter = await contract.actionCounter();
+        const approvals = await contract.REQUIRED_APPROVALS();
         setActionCounter(counter);
         setRequiredApprovals(approvals);
       }
     }
     loadContractData();
-  }, [stakingContract]);
+  }, [contract]);
 
   useEffect(() => {
     async function loadActionDetails() {
-      if (stakingContract && actionId) {
-        const details = await stakingContract.actions(BigInt(actionId));
+      if (contract && actionId) {
+        const details = await contract.actions(BigInt(actionId));
         setActionDetails(details);
       }
     }
     loadActionDetails();
-  }, [stakingContract, actionId]);
+  }, [contract, actionId]);
 
   if (!userInfo.isAdmin) {
     navigate('/');
@@ -64,26 +49,26 @@ const Admin: React.FC = () => {
 
   // Contract Write Functions
   const proposeSetDailyRewardRate = async (rate: bigint) => {
-    if (!stakingContract) return;
-    const tx = await stakingContract.proposeSetDailyRewardRate(rate);
+    if (!contract) return;
+    const tx = await contract.proposeSetDailyRewardRate(rate);
     await tx.wait();
   };
 
   const proposeAddPair = async (lpToken: string, platform: string, weight: bigint) => {
-    if (!stakingContract) return;
-    const tx = await stakingContract.proposeAddPair(lpToken, platform, weight);
+    if (!contract) return;
+    const tx = await contract.proposeAddPair(lpToken, platform, weight);
     await tx.wait();
   };
 
   const approveAction = async (actionId: bigint) => {
-    if (!stakingContract) return;
-    const tx = await stakingContract.approveAction(actionId);
+    if (!contract) return;
+    const tx = await contract.approveAction(actionId);
     await tx.wait();
   };
 
   const executeAction = async (actionId: bigint) => {
-    if (!stakingContract) return;
-    const tx = await stakingContract.executeAction(actionId);
+    if (!contract) return;
+    const tx = await contract.executeAction(actionId);
     await tx.wait();
   };
 
@@ -203,8 +188,8 @@ const Admin: React.FC = () => {
                 <button onClick={handleApproveAction} className="w-full bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors">
                   Approve Action
                 </button>
-                <button 
-                  onClick={handleExecuteAction} 
+                <button
+                  onClick={handleExecuteAction}
                   disabled={!actionDetails || actionDetails.executed || actionDetails.approvals < (requiredApprovals || 0)}
                   className="w-full bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700 transition-colors disabled:bg-gray-400"
                 >

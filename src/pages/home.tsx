@@ -1,41 +1,27 @@
 import { useState, useEffect } from 'react';
-import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { ethers } from 'ethers';
 import { userInfoAtom } from '@/store/userInfo';
 import { useAtom } from 'jotai';
-import { LPStaking, LPStaking__factory } from '@/typechain-types';
+import { useEthersSigner } from '@/hooks/useEthersSigner';
+import { useEthersProvider } from '@/hooks/useEthersProvider';
+import { useContract } from '@/providers/ContractProvider';
 
-const STAKING_CONTRACT_ADDRESS = import.meta.env.NEXT_PUBLIC_STAKING_CONTRACT_ADDRESS as string;
-const LP_TOKEN_ADDRESS = import.meta.env.NEXT_PUBLIC_LP_TOKEN_ADDRESS as string;
-const REWARD_TOKEN_ADDRESS = import.meta.env.NEXT_PUBLIC_REWARD_TOKEN_ADDRESS as string;
+const LP_TOKEN_ADDRESS = import.meta.env.VITE_LP_TOKEN_ADDRESS as string;
 
 const Home: React.FC = () => {
-  const [provider, setProvider] = useState<ethers.BrowserProvider | null>(null);
-  const [stakingContract, setStakingContract] = useState<LPStaking | null>(null);
   const [stakeInput, setStakeInput] = useState<string>('0');
   const [withdrawInput, setWithdrawInput] = useState<string>('0');
   const [userInfo, setUserInfo] = useAtom(userInfoAtom);
+  const { contract, isLoading, error } = useContract();
 
-  useEffect(() => {
-    async function init() {
-      if (window.ethereum) {
-        const provider = new ethers.BrowserProvider(window.ethereum);
-        setProvider(provider);
-        const signer = await provider.getSigner();
-        const contract = LPStaking__factory.connect(STAKING_CONTRACT_ADDRESS, signer);
-        setStakingContract(contract);
-      }
-    }
-    init();
-  }, []);
-  
+  const provider = useEthersProvider();
+  const signer = useEthersSigner();
 
   useEffect(() => {
     async function checkAdminRole() {
-      if (stakingContract && provider) {
-        const adminRole = await stakingContract.ADMIN_ROLE();
-        const signer = await provider.getSigner();
-        const hasAdminRole = await stakingContract.hasRole(adminRole, signer.address);
+      if (contract && provider && signer) {
+        const adminRole = await contract.ADMIN_ROLE();
+        const hasAdminRole = await contract.hasRole(adminRole, signer.address);
         setUserInfo({
           ...userInfo,
           isAdmin: hasAdminRole,
@@ -43,24 +29,24 @@ const Home: React.FC = () => {
       }
     }
     checkAdminRole();
-  }, [stakingContract, provider, userInfo]);
+  }, [contract, provider, userInfo]);
 
   // Contract interactions
   const stake = async (lpToken: string, amount: string) => {
-    if (!stakingContract) return;
-    const tx = await stakingContract.stake(lpToken, ethers.parseEther(amount));
+    if (!contract) return;
+    const tx = await contract.stake(lpToken, ethers.parseEther(amount));
     await tx.wait();
   };
 
   const unstake = async (lpToken: string, amount: string) => {
-    if (!stakingContract) return;
-    const tx = await stakingContract.unstake(lpToken, ethers.parseEther(amount));
+    if (!contract) return;
+    const tx = await contract.unstake(lpToken, ethers.parseEther(amount));
     await tx.wait();
   };
 
   const claimRewards = async (lpToken: string) => {
-    if (!stakingContract) return;
-    const tx = await stakingContract.claimRewards(lpToken);
+    if (!contract) return;
+    const tx = await contract.claimRewards(lpToken);
     await tx.wait();
   };
 
