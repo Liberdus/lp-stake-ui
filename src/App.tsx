@@ -1,10 +1,23 @@
-import { RouterProvider } from 'react-router-dom'
-import router from './router'
-import Spinner from './components/Spinner'
-import './App.css'
+import { RouterProvider } from 'react-router-dom';
+import router from './router';
+import './App.css';
+import { RainbowKitProvider } from '@rainbow-me/rainbowkit';
+import { WagmiProvider } from 'wagmi';
+import { config } from './configs/wagmi';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
-function App() {
-  return <RouterProvider router={router} />;
-}
+const client = new QueryClient();
 
-export default App
+const App: React.FC = () => {
+  return (
+    <WagmiProvider config={config}>
+      <QueryClientProvider client={client}>
+        <RainbowKitProvider>
+          <RouterProvider router={router} />
+        </RainbowKitProvider>
+      </QueryClientProvider>
+    </WagmiProvider>
+  );
+};
+
+export default App;

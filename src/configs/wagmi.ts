@@ -13,6 +13,6 @@ const hardhat = {
 export const config = getDefaultConfig({
   appName: 'RainbowKit App',
   projectId: 'YOUR_PROJECT_ID',
-  chains: [mainnet, polygon, base, ...(process.env.NEXT_PUBLIC_ENABLE_TESTNETS === 'true' ? [sepolia, hardhat, polygonAmoy] : [])],
+  chains: [mainnet, polygon, base, ...(import.meta.env.VITE_ENABLE_TESTNETS === 'true' ? [sepolia, hardhat, polygonAmoy] : [])],
   ssr: true,
 });
