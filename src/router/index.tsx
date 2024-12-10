@@ -1,4 +1,7 @@
+import Layout from '@/layouts';
+import Admin from '@/pages/admin';
 import Error404 from '@/pages/error404';
+import Home from '@/pages/home';
 import { createBrowserRouter } from 'react-router-dom';
 
 const router = createBrowserRouter([
@@ -12,12 +15,8 @@ const router = createBrowserRouter([
         element: <Home />,
       },
       {
-        path: '/dashboard',
-        element: <Dashboard />,
-      },
-      {
-        path: '/about',
-        element: <About />,
+        path: '/admin',
+        element: <Admin />,
       },
     ],
   },
