@@ -1,4 +1,5 @@
-import { Link } from "react-router-dom";
+import { ConnectButton } from '@rainbow-me/rainbowkit';
+import { Link } from 'react-router-dom';
 
 const Header: React.FC = () => {
   return (
@@ -12,6 +13,9 @@ const Header: React.FC = () => {
           Admin Panel
         </Link>
       </nav>
+      <div className="flex justify-end mb-8">
+        <ConnectButton />
+      </div>
     </header>
   );
 };
