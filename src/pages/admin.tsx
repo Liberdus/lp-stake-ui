@@ -59,8 +59,13 @@ const Admin: React.FC = () => {
     loadActionDetails();
   }, [contract, actionId]);
 
+  useEffect(() => {
+    if (!userInfo.isAdmin) {
+      navigate('/');
+    }
+  }, [userInfo.isAdmin, navigate]);
+
   if (!userInfo.isAdmin) {
-    navigate('/');
     return null;
   }
 
