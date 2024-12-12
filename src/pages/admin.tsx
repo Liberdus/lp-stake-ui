@@ -4,6 +4,20 @@ import { useAtom } from 'jotai';
 import { userInfoAtom } from '@/store/userInfo';
 import { useNavigate } from 'react-router-dom';
 import { useContract } from '@/providers/ContractProvider';
+import {
+  Container,
+  Typography,
+  Box,
+  Paper,
+  TextField,
+  Button,
+  Grid,
+  Card,
+  CardContent,
+  CardActions,
+  Alert,
+  Divider
+} from '@mui/material';
 
 const Admin: React.FC = () => {
   const navigate = useNavigate();
@@ -21,7 +35,6 @@ const Admin: React.FC = () => {
   const [maxWeight, setMaxWeight] = useState<bigint>();
 
   useEffect(() => {
-    console.log('contract', contract);
     async function loadContractData() {
       if (contract) {
         const counter = await contract.actionCounter();
@@ -51,7 +64,6 @@ const Admin: React.FC = () => {
     return null;
   }
 
-  // UI Functions
   const handleProposeDailyRate = async () => {
     if (newDailyRate !== '0') {
       try {
@@ -65,19 +77,16 @@ const Admin: React.FC = () => {
   const handleProposeAddPair = async () => {
     if (newPairAddress && newPairPlatform && newPairWeight !== '0') {
       try {
-        // Check if weight is greater than max weight
         if (maxWeight && BigInt(newPairWeight) > maxWeight) {
           alert(`Weight cannot be greater than ${maxWeight}`);
           return;
         }
 
-        // Validate address format
         if (!ethers.isAddress(newPairAddress)) {
           alert('Invalid LP token address format');
           return;
         }
 
-        // Validate platform name length (max 32 bytes)
         if (new TextEncoder().encode(newPairPlatform).length > 32) {
           alert('Platform name too long (max 32 bytes)');
           return;
@@ -111,91 +120,144 @@ const Admin: React.FC = () => {
   };
 
   return (
-    <div className="px-4">
-      <h1 className="text-3xl md:text-4xl font-bold text-center mb-8 text-gray-800">Admin Panel</h1>
+    <Container maxWidth="lg">
+      <Typography variant="h3" align="center" gutterBottom sx={{ my: 4 }}>
+        Admin Panel
+      </Typography>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-white rounded-lg shadow-lg p-4 md:p-6">
-          <h2 className="text-lg md:text-xl font-semibold mb-4 text-gray-800">Set Daily Reward Rate</h2>
-          <input
-            type="number"
-            value={newDailyRate}
-            onChange={(e) => setNewDailyRate(e.target.value)}
-            placeholder="New daily rate"
-            className="w-full px-3 py-2 md:px-4 md:py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4"
-          />
-          <button onClick={handleProposeDailyRate} className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors">
-            Propose New Rate
-          </button>
-        </div>
-
-        <div className="bg-white rounded-lg shadow-lg p-4 md:p-6">
-          <h2 className="text-lg md:text-xl font-semibold mb-4 text-gray-800">Add New Pair</h2>
-          <input
-            type="text"
-            value={newPairAddress}
-            onChange={(e) => setNewPairAddress(e.target.value)}
-            placeholder="LP Token Address"
-            className="w-full px-3 py-2 md:px-4 md:py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4"
-          />
-          <input
-            type="text"
-            value={newPairPlatform}
-            onChange={(e) => setNewPairPlatform(e.target.value)}
-            placeholder="Platform Name"
-            className="w-full px-3 py-2 md:px-4 md:py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4"
-          />
-          <input
-            type="number"
-            value={newPairWeight}
-            onChange={(e) => setNewPairWeight(e.target.value)}
-            placeholder="Weight"
-            className="w-full px-3 py-2 md:px-4 md:py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4"
-          />
-          <button onClick={handleProposeAddPair} className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors">
-            Propose New Pair
-          </button>
-        </div>
-
-        <div className="bg-white rounded-lg shadow-lg p-4 md:p-6 col-span-1 md:col-span-2">
-          <h2 className="text-lg md:text-xl font-semibold mb-4 text-gray-800">Multi-Sig Actions</h2>
-          <div className="mb-4">
-            <p className="text-gray-600">Total Actions: {actionCounter?.toString()}</p>
-            <p className="text-gray-600">Required Approvals: {requiredApprovals?.toString()}</p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <input
+      <Grid container spacing={3}>
+        <Grid item xs={12} md={6}>
+          <Card>
+            <CardContent>
+              <Typography variant="h5" gutterBottom>
+                Set Daily Reward Rate
+              </Typography>
+              <TextField
                 type="number"
-                value={actionId}
-                onChange={(e) => setActionId(e.target.value)}
-                placeholder="Action ID"
-                className="w-full px-3 py-2 md:px-4 md:py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4"
+                fullWidth
+                value={newDailyRate}
+                onChange={(e) => setNewDailyRate(e.target.value)}
+                placeholder="New daily rate"
+                margin="normal"
               />
-              {actionDetails && (
-                <div className="mb-4 p-4 bg-gray-50 rounded-lg">
-                  <p>Action Type: {actionDetails.actionType}</p>
-                  <p>Approvals: {actionDetails.approvals?.toString()}</p>
-                  <p>Executed: {actionDetails.executed ? 'Yes' : 'No'}</p>
-                </div>
-              )}
-            </div>
-            <div className="flex flex-col gap-4">
-              <button onClick={handleApproveAction} className="w-full bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors">
-                Approve Action
-              </button>
-              <button
-                onClick={handleExecuteAction}
-                disabled={!actionDetails || actionDetails.executed || actionDetails.approvals < (requiredApprovals || 0)}
-                className="w-full bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700 transition-colors disabled:bg-gray-400"
+            </CardContent>
+            <CardActions>
+              <Button 
+                fullWidth 
+                variant="contained" 
+                onClick={handleProposeDailyRate}
+                disabled={newDailyRate === '0'}
               >
-                Execute Action
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+                Propose New Rate
+              </Button>
+            </CardActions>
+          </Card>
+        </Grid>
+
+        <Grid item xs={12} md={6}>
+          <Card>
+            <CardContent>
+              <Typography variant="h5" gutterBottom>
+                Add New Pair
+              </Typography>
+              <TextField
+                fullWidth
+                value={newPairAddress}
+                onChange={(e) => setNewPairAddress(e.target.value)}
+                placeholder="LP Token Address"
+                margin="normal"
+              />
+              <TextField
+                fullWidth
+                value={newPairPlatform}
+                onChange={(e) => setNewPairPlatform(e.target.value)}
+                placeholder="Platform Name"
+                margin="normal"
+              />
+              <TextField
+                type="number"
+                fullWidth
+                value={newPairWeight}
+                onChange={(e) => setNewPairWeight(e.target.value)}
+                placeholder="Weight"
+                margin="normal"
+              />
+            </CardContent>
+            <CardActions>
+              <Button 
+                fullWidth 
+                variant="contained"
+                onClick={handleProposeAddPair}
+                disabled={!newPairAddress || !newPairPlatform || newPairWeight === '0'}
+              >
+                Propose New Pair
+              </Button>
+            </CardActions>
+          </Card>
+        </Grid>
+
+        <Grid item xs={12}>
+          <Card>
+            <CardContent>
+              <Typography variant="h5" gutterBottom>
+                Multi-Sig Actions
+              </Typography>
+              
+              <Box sx={{ mb: 2 }}>
+                <Typography color="text.secondary">
+                  Total Actions: {actionCounter?.toString()}
+                </Typography>
+                <Typography color="text.secondary">
+                  Required Approvals: {requiredApprovals?.toString()}
+                </Typography>
+              </Box>
+
+              <Divider sx={{ my: 2 }} />
+
+              <Grid container spacing={3}>
+                <Grid item xs={12} md={6}>
+                  <TextField
+                    type="number"
+                    fullWidth
+                    value={actionId}
+                    onChange={(e) => setActionId(e.target.value)}
+                    placeholder="Action ID"
+                    margin="normal"
+                  />
+                  {actionDetails && (
+                    <Paper sx={{ p: 2, mt: 2, bgcolor: 'grey.50' }}>
+                      <Typography>Action Type: {actionDetails.actionType}</Typography>
+                      <Typography>Approvals: {actionDetails.approvals?.toString()}</Typography>
+                      <Typography>Executed: {actionDetails.executed ? 'Yes' : 'No'}</Typography>
+                    </Paper>
+                  )}
+                </Grid>
+                <Grid item xs={12} md={6}>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                    <Button 
+                      variant="contained" 
+                      color="primary"
+                      onClick={handleApproveAction}
+                      disabled={!actionId}
+                    >
+                      Approve Action
+                    </Button>
+                    <Button
+                      variant="contained"
+                      color="secondary"
+                      onClick={handleExecuteAction}
+                      disabled={!actionDetails || actionDetails.executed || actionDetails.approvals < (requiredApprovals || 0)}
+                    >
+                      Execute Action
+                    </Button>
+                  </Box>
+                </Grid>
+              </Grid>
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
+    </Container>
   );
 };
 

@@ -36,7 +36,7 @@ interface ContractContextType {
     weight: bigint;
     isActive: boolean;
   }>;
-  getActivePairs: () => Promise<string[]>;
+  getPairs: () => Promise<string[]>;
   
   // Contract state
   getDailyRewardRate: () => Promise<bigint>;
@@ -60,7 +60,7 @@ const ContractContext = createContext<ContractContextType>({
   executeAction: async () => {},
   getUserStakeInfo: async () => ({ amount: BigInt(0), pendingRewards: BigInt(0), lastRewardTime: BigInt(0) }),
   getPairInfo: async () => ({ token: '', platform: '', weight: BigInt(0), isActive: false }),
-  getActivePairs: async () => [],
+  getPairs: async () => [],
   getDailyRewardRate: async () => BigInt(0),
   getTotalWeight: async () => BigInt(0),
   getRewardToken: async () => '',
@@ -85,14 +85,14 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
 
   useEffect(() => {
     const initContract = async () => {
-      if (!provider) {
+      if (!provider || !signer) {
         setIsLoading(false);
         return;
       }
 
       try {
-        const stakingContract = new ethers.Contract(STAKING_CONTRACT_ADDRESS, LPStakingContractABI.abi, signer);
-        setContract(stakingContract);
+        const stakingContract = new ethers.Contract(STAKING_CONTRACT_ADDRESS, LPStakingContractABI.abi, provider);
+        setContract(stakingContract.connect(signer) as ethers.Contract);
         setError(null);
       } catch (err) {
         setError(err instanceof Error ? err : new Error('Failed to initialize contract'));
@@ -139,7 +139,7 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
 
   const proposeAddPair = async (lpToken: string, platform: string, weight: string) => {
     if (!contract) throw new Error('Contract not initialized');
-    const tx = await contract.proposeAddPair(lpToken, platform, ethers.parseEther(weight));
+    const tx = await contract.proposeAddPair(lpToken, platform, weight);
     await tx.wait();
   };
 
@@ -169,9 +169,9 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
     return { token, platform, weight, isActive };
   };
 
-  const getActivePairs = async () => {
+  const getPairs = async () => {
     if (!contract) throw new Error('Contract not initialized');
-    return await contract.activePairs();
+    return await contract.getPairs();
   };
 
   // Contract state
@@ -220,7 +220,7 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
         getUserStakeInfo,
         // Pair info
         getPairInfo,
-        getActivePairs,
+        getPairs,
         // Contract state
         getDailyRewardRate,
         getTotalWeight,

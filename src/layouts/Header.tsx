@@ -1,29 +1,100 @@
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { Link } from 'react-router-dom';
 import logo from '../assets/logo.png';
+import { AppBar, Toolbar, Typography, Box, Button, Container, useTheme, useMediaQuery } from '@mui/material';
 
 const Header: React.FC = () => {
-  return (
-    <header className="flex flex-col md:flex-row justify-between items-center px-4 py-3 bg-gray-100 shadow-md">
-      <div className="flex flex-row items-center w-full md:w-auto justify-around gap-4">
-        <div className="flex flex-row items-center gap-2 mb-2 md:mb-0">
-          <img src={logo} alt="Liberdus LP Staking" className="w-8 h-8 md:w-10 md:h-10" />
-          <h1 className="text-xl md:text-2xl font-bold text-gray-800 hidden sm:block">Liber LP Staking</h1>
-        </div>
-        <nav className="flex flex-1 justify-center gap-3">
-          <Link to="/" className="text-gray-800 hover:text-gray-900 transition-colors">
-            Home
-          </Link>
-          <Link to="/admin" className="text-gray-800 hover:text-gray-900 transition-colors">
-            Admin Panel
-          </Link>
-        </nav>
-      </div>
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
-      <div className="mt-4 md:mt-0">
-        <ConnectButton accountStatus="avatar" chainStatus="icon" />
-      </div>
-    </header>
+  return (
+    <AppBar position="static" color="default" elevation={2}>
+      <Container maxWidth="lg">
+        <Toolbar
+          sx={{
+            flexDirection: { xs: 'column', md: 'row' },
+            py: { xs: 2, md: 1 },
+            gap: { xs: 2, md: 0 },
+            justifyContent: 'space-between'
+          }}
+        >
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              width: '100%',
+              justifyContent: { xs: 'center', md: 'flex-start' },
+              flexWrap: 'wrap',
+              gap: { xs: 1, md: 2 }
+            }}
+          >
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1,
+                flexShrink: 0
+              }}
+            >
+              <Box
+                component="img"
+                src={logo}
+                alt="Liberdus LP Staking"
+                sx={{
+                  width: { xs: 28, sm: 32, md: 40 },
+                  height: { xs: 28, sm: 32, md: 40 },
+                  transition: 'width 0.2s, height 0.2s'
+                }}
+              />
+              <Typography
+                variant={isMobile ? "subtitle1" : "h6"}
+                sx={{
+                  display: { xs: 'none', sm: 'block' },
+                  fontWeight: 'bold',
+                  whiteSpace: 'nowrap'
+                }}
+              >
+                Liber LP Staking
+              </Typography>
+            </Box>
+
+            <Box
+              sx={{
+                display: 'flex',
+                gap: { xs: 1, sm: 2 },
+                justifyContent: 'center',
+                flexWrap: 'wrap'
+              }}
+            >
+              <Button
+                component={Link}
+                to="/"
+                color="inherit"
+                size={isMobile ? "small" : "medium"}
+              >
+                Home
+              </Button>
+              <Button
+                component={Link}
+                to="/admin"
+                color="inherit"
+                size={isMobile ? "small" : "medium"}
+              >
+                Admin Panel
+              </Button>
+            </Box>
+          </Box>
+
+          <Box sx={{ 
+            width: { xs: '100%', md: 'auto' },
+            display: 'flex',
+            justifyContent: 'center'
+          }}>
+            <ConnectButton accountStatus={isMobile ? "address" : "avatar"} chainStatus="icon" />
+          </Box>
+        </Toolbar>
+      </Container>
+    </AppBar>
   );
 };
 

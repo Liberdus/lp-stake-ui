@@ -1,9 +1,22 @@
+import { Box, Typography } from '@mui/material';
+
 const Footer: React.FC = () => {
   return (
-    <div className="flex justify-center items-center h-16 bg-gray-200">
-      <p className="text-sm text-gray-500">© 2024 Liberdus LP Stake</p>
-    </div>
-  )
-}
+    <Box
+      component="footer"
+      sx={{
+        height: 64,
+        bgcolor: 'grey.100',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}
+    >
+      <Typography variant="body2" color="text.secondary">
+        © 2024 Liberdus LP Stake
+      </Typography>
+    </Box>
+  );
+};
 
-export default Footer
+export default Footer;
