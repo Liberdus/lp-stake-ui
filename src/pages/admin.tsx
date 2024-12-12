@@ -17,7 +17,8 @@ const Admin: React.FC = () => {
   const [actionDetails, setActionDetails] = useState<any>();
   const [userInfo, setUserInfo] = useAtom(userInfoAtom);
 
-  const { contract, isLoading, error } = useContract();
+  const { contract, proposeSetDailyRewardRate, proposeAddPair, approveAction, executeAction } = useContract();
+  const [maxWeight, setMaxWeight] = useState<bigint>();
 
   useEffect(() => {
     console.log('contract', contract);
@@ -25,8 +26,11 @@ const Admin: React.FC = () => {
       if (contract) {
         const counter = await contract.actionCounter();
         const approvals = await contract.REQUIRED_APPROVALS();
+        const maxWeight = await contract.MAX_WEIGHT();
+
         setActionCounter(counter);
         setRequiredApprovals(approvals);
+        setMaxWeight(maxWeight);
       }
     }
     loadContractData();
@@ -47,36 +51,11 @@ const Admin: React.FC = () => {
     return null;
   }
 
-  // Contract Write Functions
-  const proposeSetDailyRewardRate = async (rate: bigint) => {
-    if (!contract) return;
-    const tx = await contract.proposeSetDailyRewardRate(rate);
-    await tx.wait();
-  };
-
-  const proposeAddPair = async (lpToken: string, platform: string, weight: bigint) => {
-    if (!contract) return;
-    const tx = await contract.proposeAddPair(lpToken, platform, weight);
-    await tx.wait();
-  };
-
-  const approveAction = async (actionId: bigint) => {
-    if (!contract) return;
-    const tx = await contract.approveAction(actionId);
-    await tx.wait();
-  };
-
-  const executeAction = async (actionId: bigint) => {
-    if (!contract) return;
-    const tx = await contract.executeAction(actionId);
-    await tx.wait();
-  };
-
   // UI Functions
   const handleProposeDailyRate = async () => {
     if (newDailyRate !== '0') {
       try {
-        await proposeSetDailyRewardRate(ethers.parseEther(newDailyRate));
+        await proposeSetDailyRewardRate(newDailyRate);
       } catch (error) {
         console.error('Error proposing daily rate:', error);
       }
@@ -86,7 +65,25 @@ const Admin: React.FC = () => {
   const handleProposeAddPair = async () => {
     if (newPairAddress && newPairPlatform && newPairWeight !== '0') {
       try {
-        await proposeAddPair(newPairAddress, newPairPlatform, ethers.parseEther(newPairWeight));
+        // Check if weight is greater than max weight
+        if (maxWeight && BigInt(newPairWeight) > maxWeight) {
+          alert(`Weight cannot be greater than ${maxWeight}`);
+          return;
+        }
+
+        // Validate address format
+        if (!ethers.isAddress(newPairAddress)) {
+          alert('Invalid LP token address format');
+          return;
+        }
+
+        // Validate platform name length (max 32 bytes)
+        if (new TextEncoder().encode(newPairPlatform).length > 32) {
+          alert('Platform name too long (max 32 bytes)');
+          return;
+        }
+
+        await proposeAddPair(newPairAddress, newPairPlatform, newPairWeight);
       } catch (error) {
         console.error('Error proposing new pair:', error);
       }
@@ -96,7 +93,7 @@ const Admin: React.FC = () => {
   const handleApproveAction = async () => {
     if (actionId) {
       try {
-        await approveAction(BigInt(actionId));
+        await approveAction(Number(actionId));
       } catch (error) {
         console.error('Error approving action:', error);
       }
@@ -106,7 +103,7 @@ const Admin: React.FC = () => {
   const handleExecuteAction = async () => {
     if (actionId) {
       try {
-        await executeAction(BigInt(actionId));
+        await executeAction(Number(actionId));
       } catch (error) {
         console.error('Error executing action:', error);
       }

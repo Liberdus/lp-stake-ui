@@ -1,5 +1,4 @@
-import { useState, useEffect } from 'react';
-import { ethers } from 'ethers';
+import { useEffect, useState } from 'react';
 import { userInfoAtom } from '@/store/userInfo';
 import { useAtom } from 'jotai';
 import { useEthersSigner } from '@/hooks/useEthersSigner';
@@ -12,7 +11,7 @@ const Home: React.FC = () => {
   const [stakeInput, setStakeInput] = useState<string>('0');
   const [withdrawInput, setWithdrawInput] = useState<string>('0');
   const [userInfo, setUserInfo] = useAtom(userInfoAtom);
-  const { contract, isLoading, error } = useContract();
+  const { contract, stake, unstake, claimRewards } = useContract();
 
   const provider = useEthersProvider();
   const signer = useEthersSigner();
@@ -30,25 +29,6 @@ const Home: React.FC = () => {
     }
     checkAdminRole();
   }, [contract, provider, userInfo]);
-
-  // Contract interactions
-  const stake = async (lpToken: string, amount: string) => {
-    if (!contract) return;
-    const tx = await contract.stake(lpToken, ethers.parseEther(amount));
-    await tx.wait();
-  };
-
-  const unstake = async (lpToken: string, amount: string) => {
-    if (!contract) return;
-    const tx = await contract.unstake(lpToken, ethers.parseEther(amount));
-    await tx.wait();
-  };
-
-  const claimRewards = async (lpToken: string) => {
-    if (!contract) return;
-    const tx = await contract.claimRewards(lpToken);
-    await tx.wait();
-  };
 
   // UI functions
   const handleStake = async () => {
