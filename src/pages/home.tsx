@@ -48,60 +48,58 @@ const Home: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      <main className="container mx-auto px-4 py-8">
-        <h1 className="text-4xl font-bold text-center mb-8 text-gray-800">Welcome to LIB LP Staking</h1>
+    <div className="px-4">
+      <h1 className="text-3xl md:text-4xl font-bold text-center mb-8 text-gray-800">Welcome to LIB LP Staking</h1>
 
-        <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
-          <div className="grid grid-cols-2 gap-4 text-lg">
-            <p className="flex items-center">
-              <span className="font-semibold mr-2">Staked Amount:</span>
-              LP Tokens
-            </p>
-            <p className="flex items-center">
-              <span className="font-semibold mr-2">Pending Rewards:</span>
-              Reward Tokens
-            </p>
-          </div>
+      <div className="bg-white rounded-lg shadow-lg p-4 md:p-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-lg">
+          <p className="flex items-center">
+            <span className="font-semibold mr-2">Staked Amount:</span>
+            LP Tokens
+          </p>
+          <p className="flex items-center">
+            <span className="font-semibold mr-2">Pending Rewards:</span>
+            Reward Tokens
+          </p>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="bg-white rounded-lg shadow-lg p-4 md:p-6">
+          <h2 className="text-lg md:text-xl font-semibold mb-4 text-gray-800">Stake Tokens</h2>
+          <input
+            type="number"
+            value={stakeInput}
+            onChange={(e) => setStakeInput(e.target.value)}
+            placeholder="Amount to stake"
+            className="w-full px-3 py-2 md:px-4 md:py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4"
+          />
+          <button onClick={handleStake} className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors">
+            Stake
+          </button>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-6">
-          <div className="bg-white rounded-lg shadow-lg p-6">
-            <h2 className="text-xl font-semibold mb-4 text-gray-800">Stake Tokens</h2>
-            <input
-              type="number"
-              value={stakeInput}
-              onChange={(e) => setStakeInput(e.target.value)}
-              placeholder="Amount to stake"
-              className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4"
-            />
-            <button onClick={handleStake} className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors">
-              Stake
-            </button>
-          </div>
-
-          <div className="bg-white rounded-lg shadow-lg p-6">
-            <h2 className="text-xl font-semibold mb-4 text-gray-800">Withdraw Tokens</h2>
-            <input
-              type="number"
-              value={withdrawInput}
-              onChange={(e) => setWithdrawInput(e.target.value)}
-              placeholder="Amount to withdraw"
-              className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4"
-            />
-            <button onClick={handleWithdraw} className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors">
-              Withdraw
-            </button>
-          </div>
-
-          <div className="bg-white rounded-lg shadow-lg p-6">
-            <h2 className="text-xl font-semibold mb-4 text-gray-800">Claim Rewards</h2>
-            <button onClick={handleClaim} className="w-full bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors mt-[52px]">
-              Claim
-            </button>
-          </div>
+        <div className="bg-white rounded-lg shadow-lg p-4 md:p-6">
+          <h2 className="text-lg md:text-xl font-semibold mb-4 text-gray-800">Withdraw Tokens</h2>
+          <input
+            type="number"
+            value={withdrawInput}
+            onChange={(e) => setWithdrawInput(e.target.value)}
+            placeholder="Amount to withdraw"
+            className="w-full px-3 py-2 md:px-4 md:py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4"
+          />
+          <button onClick={handleWithdraw} className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors">
+            Withdraw
+          </button>
         </div>
-      </main>
+
+        <div className="bg-white rounded-lg shadow-lg p-4 md:p-6">
+          <h2 className="text-lg md:text-xl font-semibold mb-4 text-gray-800">Claim Rewards</h2>
+          <button onClick={handleClaim} className="w-full bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors mt-4 md:mt-[52px]">
+            Claim
+          </button>
+        </div>
+      </div>
     </div>
   );
 };
