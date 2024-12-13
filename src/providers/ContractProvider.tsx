@@ -18,7 +18,7 @@ interface ContractContextType {
   // Propose functions
   proposeSetDailyRewardRate: (newRate: string) => Promise<void>;
   proposeUpdatePairWeights: (lpTokens: string[], weights: string[]) => Promise<void>;
-  proposeAddPair: (lpToken: string, platform: string, weight: string) => Promise<void>;
+  proposeAddPair: (lpToken: string, pairName:string, platform: string, weight: string) => Promise<void>;
   approveAction: (actionId: number) => Promise<void>;
   executeAction: (actionId: number) => Promise<void>;
 
@@ -36,7 +36,7 @@ interface ContractContextType {
     weight: bigint;
     isActive: boolean;
   }>;
-  getPairs: () => Promise<string[]>;
+  getPairs: () => Promise<any[]>;
   
   // Contract state
   getDailyRewardRate: () => Promise<bigint>;
@@ -137,9 +137,9 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
     await tx.wait();
   };
 
-  const proposeAddPair = async (lpToken: string, platform: string, weight: string) => {
+  const proposeAddPair = async (lpToken: string, pairName:string, platform: string, weight: string) => {
     if (!contract) throw new Error('Contract not initialized');
-    const tx = await contract.proposeAddPair(lpToken, platform, weight);
+    const tx = await contract.proposeAddPair(lpToken, pairName, platform, ethers.parseEther(weight));
     await tx.wait();
   };
 

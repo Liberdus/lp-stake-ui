@@ -61,7 +61,7 @@ const Header: React.FC = () => {
           {isMobile ? (
             <>
               <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-                <ConnectButton accountStatus="address" chainStatus="icon" />
+                <ConnectButton accountStatus="avatar" chainStatus="icon" />
                 <IconButton
                   size="large"
                   edge="end"

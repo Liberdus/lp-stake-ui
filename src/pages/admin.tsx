@@ -23,6 +23,7 @@ const Admin: React.FC = () => {
   const navigate = useNavigate();
   const [newDailyRate, setNewDailyRate] = useState<string>('0');
   const [newPairAddress, setNewPairAddress] = useState<string>('');
+  const [newPairName, setNewPairName] = useState<string>('');
   const [newPairPlatform, setNewPairPlatform] = useState<string>('');
   const [newPairWeight, setNewPairWeight] = useState<string>('0');
   const [actionId, setActionId] = useState<string>('');
@@ -30,9 +31,13 @@ const Admin: React.FC = () => {
   const [requiredApprovals, setRequiredApprovals] = useState<bigint>();
   const [actionDetails, setActionDetails] = useState<any>();
   const [userInfo, setUserInfo] = useAtom(userInfoAtom);
+  
+  // New states for update weights
+  const [updatePairAddresses, setUpdatePairAddresses] = useState<string[]>(['']);
+  const [updatePairWeights, setUpdatePairWeights] = useState<string[]>(['0']);
 
-  const { contract, proposeSetDailyRewardRate, proposeAddPair, approveAction, executeAction } = useContract();
-  const [maxWeight, setMaxWeight] = useState<bigint>();
+  const { contract, proposeSetDailyRewardRate, proposeAddPair, proposeUpdatePairWeights, approveAction, executeAction } = useContract();
+  const [maxWeight, setMaxWeight] = useState<number>();
 
   useEffect(() => {
     async function loadContractData() {
@@ -80,10 +85,13 @@ const Admin: React.FC = () => {
   };
 
   const handleProposeAddPair = async () => {
-    if (newPairAddress && newPairPlatform && newPairWeight !== '0') {
+    if (newPairAddress && newPairPlatform && newPairName && newPairWeight !== '0') {
       try {
-        if (maxWeight && BigInt(newPairWeight) > maxWeight) {
-          alert(`Weight cannot be greater than ${maxWeight}`);
+
+        console.log(maxWeight);
+
+        if (maxWeight && ethers.parseEther(newPairWeight) > maxWeight) {
+          alert(`Weight cannot be greater than ${ethers.formatEther(maxWeight)}`);
           return;
         }
 
@@ -97,10 +105,47 @@ const Admin: React.FC = () => {
           return;
         }
 
-        await proposeAddPair(newPairAddress, newPairPlatform, newPairWeight);
+        await proposeAddPair(newPairAddress, newPairName, newPairPlatform, newPairWeight);
       } catch (error) {
         console.error('Error proposing new pair:', error);
       }
+    }
+  };
+
+  const handleAddPairWeight = () => {
+    setUpdatePairAddresses([...updatePairAddresses, '']);
+    setUpdatePairWeights([...updatePairWeights, '0']);
+  };
+
+  const handleRemovePairWeight = (index: number) => {
+    setUpdatePairAddresses(updatePairAddresses.filter((_, i) => i !== index));
+    setUpdatePairWeights(updatePairWeights.filter((_, i) => i !== index));
+  };
+
+  const handleProposeUpdateWeights = async () => {
+    try {
+      // Validate addresses
+      const validAddresses = updatePairAddresses.every(addr => ethers.isAddress(addr));
+      if (!validAddresses) {
+        alert('Invalid LP token address format');
+        return;
+      }
+
+      // Validate weights
+      if (maxWeight) {
+        const validWeights = updatePairWeights.every(weight => 
+          Number(weight) <= Number(maxWeight) && Number(weight) >= 0
+        );
+
+        if (!validWeights) {
+          alert(`Weights must be between 0 and ${maxWeight}`);
+          return;
+        }
+      }
+
+      await proposeUpdatePairWeights(updatePairAddresses, updatePairWeights);
+    } catch (error) {
+      console.error('Error proposing weight updates:', error);
     }
   };
 
@@ -174,6 +219,13 @@ const Admin: React.FC = () => {
               />
               <TextField
                 fullWidth
+                value={newPairName}
+                onChange={(e) => setNewPairName(e.target.value)}
+                placeholder="LP Token Pair Name"
+                margin="normal"
+              />
+              <TextField
+                fullWidth
                 value={newPairPlatform}
                 onChange={(e) => setNewPairPlatform(e.target.value)}
                 placeholder="Platform Name"
@@ -198,6 +250,61 @@ const Admin: React.FC = () => {
                 Propose New Pair
               </Button>
             </CardActions>
+          </Card>
+        </Grid>
+
+        <Grid item xs={12}>
+          <Card>
+            <CardContent>
+              <Typography variant="h5" gutterBottom>
+                Update Pair Weights
+              </Typography>
+              {updatePairAddresses.map((address, index) => (
+                <Box key={index} sx={{ display: 'flex', gap: 2, mb: 2 }}>
+                  <TextField
+                    fullWidth
+                    value={address}
+                    onChange={(e) => {
+                      const newAddresses = [...updatePairAddresses];
+                      newAddresses[index] = e.target.value;
+                      setUpdatePairAddresses(newAddresses);
+                    }}
+                    placeholder="LP Token Address"
+                  />
+                  <TextField
+                    type="number"
+                    sx={{ width: '200px' }}
+                    value={updatePairWeights[index]}
+                    onChange={(e) => {
+                      const newWeights = [...updatePairWeights];
+                      newWeights[index] = e.target.value;
+                      setUpdatePairWeights(newWeights);
+                    }}
+                    placeholder="Weight"
+                  />
+                  <Button 
+                    variant="outlined" 
+                    color="error"
+                    onClick={() => handleRemovePairWeight(index)}
+                    disabled={updatePairAddresses.length === 1}
+                  >
+                    Remove
+                  </Button>
+                </Box>
+              ))}
+              <Box sx={{ display: 'flex', gap: 2 }}>
+                <Button variant="outlined" onClick={handleAddPairWeight}>
+                  Add Pair
+                </Button>
+                <Button 
+                  variant="contained"
+                  onClick={handleProposeUpdateWeights}
+                  disabled={updatePairAddresses.some(addr => !addr) || updatePairWeights.some(w => w === '0')}
+                >
+                  Propose Weight Updates
+                </Button>
+              </Box>
+            </CardContent>
           </Card>
         </Grid>
 

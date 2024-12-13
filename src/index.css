@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css?family=Exo:400,500,600,700,800&display=swap'); /*Optional: import any Google font from https://fonts.google.com/*/
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

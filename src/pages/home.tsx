@@ -24,6 +24,7 @@ import {
   Slider,
   Stack
 } from '@mui/material';
+import { truncateAddress } from '@/utils';
 
 interface PairInfo {
   lpToken: string;
@@ -81,15 +82,15 @@ const Home: React.FC = () => {
           const pairsData = await getPairs();
           const dailyRate = await getDailyRewardRate();
           const totalWeight = await getTotalWeight();
-          
+
           const pairsInfo: PairInfo[] = await Promise.all(
-            pairsData.map(async (pair: string) => {
-              const info = await contract.pairs(pair);
+            pairsData.map(async (pair: any) => {
+              const info = await contract.pairs(pair.lpToken);
               let myShare = 0;
               let myEarnings = 0;
               
               if (signer) {
-                const userStake = await getUserStakeInfo(await signer.getAddress(), pair);
+                const userStake = await getUserStakeInfo(await signer.getAddress(), pair.lpToken);
                 myShare = Number(userStake.amount) / 1e18;
                 myEarnings = Number(userStake.pendingRewards) / 1e18;
               }
@@ -129,8 +130,8 @@ const Home: React.FC = () => {
     fetchData();
   }, [contract, provider, signer]);
 
-  const handlePairClick = (pair: string) => {
-    window.open(`https://app.uniswap.org/#/add/v2/${pair}`, '_blank');
+  const handlePairClick = (pairAddress: string) => {
+    window.open(`https://app.uniswap.org/#/add/v2/${pairAddress}`, '_blank');
   };
 
   const handleShareClick = (pair: PairInfo) => {
@@ -196,10 +197,10 @@ const Home: React.FC = () => {
               <TableRow key={pair.lpToken}>
                 <TableCell>
                   <Button 
-                    onClick={() => handlePairClick(pair.lpToken)}
+                    onClick={() => handlePairClick(pair.lpToken.toString())}
                     color="primary"
                   >
-                    {pair.lpToken}
+                    {truncateAddress(pair.lpToken.toString())}
                   </Button>
                 </TableCell>
                 <TableCell>{pair.platform}</TableCell>
@@ -255,7 +256,7 @@ const Home: React.FC = () => {
               <Stack spacing={3}>
                 <Slider
                   value={stakePercent}
-                  onChange={(_: any, value: number) => setStakePercent(value as number)}
+                  onChange={(_: any, value: number | number[]) => setStakePercent(value as number)}
                   valueLabelDisplay="auto"
                 />
                 <Typography>Stake {stakePercent}%</Typography>
@@ -274,7 +275,7 @@ const Home: React.FC = () => {
               <Stack spacing={3}>
                 <Slider
                   value={unstakePercent}
-                  onChange={(_: any, value: number) => setUnstakePercent(value as number)}
+                  onChange={(_: any, value: number | number[]) => setUnstakePercent(value as number)}
                   valueLabelDisplay="auto"
                 />
                 <Typography>Unstake {unstakePercent}%</Typography>
