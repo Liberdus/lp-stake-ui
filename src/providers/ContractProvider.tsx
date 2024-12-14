@@ -200,6 +200,10 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
     return await contract.actionCounter();
   };
 
+  const getTokenInfo = async () => {
+
+  }
+
   return (
     <ContractContext.Provider 
       value={{ 
