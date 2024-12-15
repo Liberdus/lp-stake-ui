@@ -36,7 +36,7 @@ const StakingModal: React.FC<StakingModalProps> = ({ selectedPair, isModalOpen, 
   const handleUnstake = async () => {
     if (!selectedPair || unstakePercent === 0) return;
     try {
-      await unstake(selectedPair.lpToken, (unstakePercent * balance / 100).toString());
+      await unstake(selectedPair.lpToken, (unstakePercent * selectedPair.myShare * selectedPair.tvl / 10000).toString());
       setIsModalOpen(false);
     } catch (error) {
       console.error('Error unstaking:', error);
@@ -64,6 +64,7 @@ const StakingModal: React.FC<StakingModalProps> = ({ selectedPair, isModalOpen, 
     fetchData();
   }, [selectedPair, signer]);
 
+  if (!selectedPair || !tokenInfo) return null;
 
   return (
     <Dialog open={isModalOpen} onClose={() => setIsModalOpen(false)} maxWidth="sm" fullWidth>
@@ -93,7 +94,7 @@ const StakingModal: React.FC<StakingModalProps> = ({ selectedPair, isModalOpen, 
           {tabValue === 1 && (
             <Stack spacing={3}>
               <Slider value={unstakePercent} onChange={(_: any, value: number | number[]) => setUnstakePercent(value as number)} valueLabelDisplay="auto" />
-              <Typography>Unstake {unstakePercent}%</Typography>
+              <Typography>Unstake {unstakePercent}% ({(unstakePercent * selectedPair?.myShare * selectedPair?.tvl / 10000).toFixed(2)} {tokenInfo?.symbol})</Typography>
               <Button variant="contained" onClick={handleUnstake} fullWidth>
                 Unstake
               </Button>
