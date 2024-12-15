@@ -4,7 +4,7 @@ import Header from './Header';
 import Footer from './Footer';
 import NotifySnackBar from '@/components/NotifySnackBar';
 
-const Layout = () => {
+const Layout:React.FC = () => {
   return (
     <Box
       sx={{

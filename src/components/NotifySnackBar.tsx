@@ -17,7 +17,7 @@ export default function NotifySnackBar() {
   const [notification] = useAtom(notificationAtom);
 
   useEffect(() => {
-    if (notification) {
+    if (notification && notification.message !== '') {
       setOpen(true);
     }
   }, [notification]);

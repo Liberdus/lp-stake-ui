@@ -81,12 +81,14 @@ const Home: React.FC = () => {
           );
 
           const sortedPairs = pairsInfo.sort((a, b) => {
-            if (a.weight === BigInt(0) && b.weight > BigInt(0)) return 1;
-            if (b.weight === BigInt(0) && a.weight > BigInt(0)) return -1;
-            if (a.apr !== b.apr) return b.apr - a.apr;
-            return b.tvl - a.tvl;
+            if (a.weight !== b.weight) {
+              return a.weight > b.weight ? -1 : 1;
+            }
+            if (a.tvl !== b.tvl) {
+              return b.tvl - a.tvl;
+            }
+            return b.apr - a.apr;
           });
-
           setPairs(sortedPairs);
           setHourlyRewardRate(ethers.formatEther(dailyRate / BigInt(24)));
         } catch (error) {
@@ -113,7 +115,7 @@ const Home: React.FC = () => {
       </Typography>
 
       <Typography variant="h6" gutterBottom>
-        Hourly Reward Rate: {hourlyRewardRate} LIB
+        Hourly Reward Rate: {Number(hourlyRewardRate).toFixed(2)} LIB
       </Typography>
 
       <TableContainer component={Paper} sx={{ mt: 3 }}>
@@ -140,12 +142,12 @@ const Home: React.FC = () => {
                 <TableCell>{pair.platform}</TableCell>
                 <TableCell>{pair.apr.toFixed(1)}%</TableCell>
                 <TableCell>
-                  {ethers.formatEther(pair.weight)} ({(Number(pair.weight) * 100) / Number(pairs.reduce((acc, p) => acc + p.weight, BigInt(0)))}%)
+                  {ethers.formatEther(pair.weight)} ({((Number(pair.weight) * 100) / Number(pairs.reduce((acc, p) => acc + p.weight, BigInt(0)))).toFixed(2)}%)
                 </TableCell>
                 <TableCell>${(pair.tvl / 1000).toFixed(1)}K</TableCell>
                 <TableCell>
                   <Button onClick={() => handleShareClick(pair)} color="primary" disabled={!signer}>
-                    {pair.myShare.toFixed(4)}%
+                    {pair.myShare.toFixed(2)}%
                   </Button>
                 </TableCell>
                 <TableCell>

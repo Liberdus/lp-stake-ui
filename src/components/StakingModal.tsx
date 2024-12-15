@@ -1,9 +1,11 @@
+import { useEthersSigner } from '@/hooks/useEthersSigner';
 import { useContract } from '@/providers/ContractProvider';
-import { PairInfo } from '@/types';
+import { PairInfo, TokenInfo } from '@/types';
 import { Button } from '@mui/material';
 import { Box, Typography, Slider, Stack, DialogContent, Tab } from '@mui/material';
 import { Dialog, Tabs } from '@mui/material';
-import { SetStateAction, useState } from 'react';
+import { ethers } from 'ethers';
+import { SetStateAction, useEffect, useState } from 'react';
 
 interface StakingModalProps {
   selectedPair: PairInfo | null;
@@ -15,13 +17,16 @@ const StakingModal: React.FC<StakingModalProps> = ({ selectedPair, isModalOpen, 
   const [tabValue, setTabValue] = useState(0);
   const [stakePercent, setStakePercent] = useState<number>(100);
   const [unstakePercent, setUnstakePercent] = useState<number>(100);
+  const [balance, setBalance] = useState<number>(0);
+  const [tokenInfo, setTokenInfo] = useState<TokenInfo | null>(null);
 
-  const { stake, unstake, claimRewards } = useContract();
-
+  const { stake, unstake, claimRewards, getTokenInfo, getERC20Balance } = useContract();
+  const signer = useEthersSigner();
+  
   const handleStake = async () => {
     if (!selectedPair || stakePercent === 0) return;
     try {
-      await stake(selectedPair.lpToken, (stakePercent / 100).toString());
+      await stake(selectedPair.lpToken, (stakePercent * balance / 100).toString());
       setIsModalOpen(false);
     } catch (error) {
       console.error('Error staking:', error);
@@ -31,7 +36,7 @@ const StakingModal: React.FC<StakingModalProps> = ({ selectedPair, isModalOpen, 
   const handleUnstake = async () => {
     if (!selectedPair || unstakePercent === 0) return;
     try {
-      await unstake(selectedPair.lpToken, (unstakePercent / 100).toString());
+      await unstake(selectedPair.lpToken, (unstakePercent * balance / 100).toString());
       setIsModalOpen(false);
     } catch (error) {
       console.error('Error unstaking:', error);
@@ -48,6 +53,18 @@ const StakingModal: React.FC<StakingModalProps> = ({ selectedPair, isModalOpen, 
     }
   };
 
+  useEffect(() => {
+    async function fetchData() {
+      if (!signer) return;
+      const tokenInfo = await getTokenInfo(selectedPair?.lpToken || '');
+      const tokenBalanceOfSigner = await getERC20Balance(signer?.address || '', selectedPair?.lpToken || '');
+      setTokenInfo(tokenInfo);
+      setBalance(Number(ethers.formatUnits(tokenBalanceOfSigner, tokenInfo.decimals)));
+    }
+    fetchData();
+  }, [selectedPair, signer]);
+
+
   return (
     <Dialog open={isModalOpen} onClose={() => setIsModalOpen(false)} maxWidth="sm" fullWidth>
       <DialogContent>
@@ -62,9 +79,9 @@ const StakingModal: React.FC<StakingModalProps> = ({ selectedPair, isModalOpen, 
             <Stack spacing={3}>
               <Slider value={stakePercent} onChange={(_: any, value: number | number[]) => setStakePercent(value as number)} valueLabelDisplay="auto" />
               <Box className="flex justify-between">
-                <Typography>Stake {stakePercent}%</Typography>
+                <Typography>Stake {stakePercent}% ({stakePercent * balance / 100} {tokenInfo?.symbol})</Typography>
                 <Typography>
-                  Balance: {selectedPair?.myShare.toFixed(4)}/{selectedPair?.myEarnings.toFixed(2)} {selectedPair?.symbol}
+                  Balance: {balance.toFixed(4)} {tokenInfo?.symbol}
                 </Typography>
               </Box>
               <Button variant="contained" onClick={handleStake} disabled={selectedPair?.weight === BigInt(0)} fullWidth>
@@ -85,7 +102,7 @@ const StakingModal: React.FC<StakingModalProps> = ({ selectedPair, isModalOpen, 
 
           {tabValue === 2 && (
             <Stack spacing={3}>
-              <Typography>Available to withdraw: {selectedPair?.myEarnings.toFixed(2)} LIB</Typography>
+              <Typography>Available to withdraw: {selectedPair?.myEarnings.toFixed(2)} {tokenInfo?.symbol}</Typography>
               <Button variant="contained" onClick={handleWithdraw} disabled={!selectedPair?.myEarnings} fullWidth>
                 Withdraw All
               </Button>
