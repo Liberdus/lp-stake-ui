@@ -22,7 +22,7 @@ export default function NotifySnackBar() {
     }
   }, [notification]);
 
-  if (!notification) return null;
+  if (!notification || notification.message === '') return null;
 
   return (
     <Snackbar open={open} autoHideDuration={notification.duration || 6000} onClose={handleClose} className='max-w-[600px]'>

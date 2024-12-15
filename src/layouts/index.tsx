@@ -1,10 +1,15 @@
-import { Outlet } from 'react-router-dom';
+import { Navigate, Outlet } from 'react-router-dom';
 import { Box } from '@mui/material';
 import Header from './Header';
 import Footer from './Footer';
 import NotifySnackBar from '@/components/NotifySnackBar';
+import { useEffect } from 'react';
 
 const Layout:React.FC = () => {
+  useEffect(() => {
+    localStorage.setItem('lastVisit', new Date().getTime().toString());
+  }, []);
+
   return (
     <Box
       sx={{

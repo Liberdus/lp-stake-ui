@@ -8,6 +8,7 @@ import { ethers } from 'ethers';
 import { Container, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button } from '@mui/material';
 import { PairInfo, SCPairData } from '@/types';
 import StakingModal from '@/components/StakingModal';
+import SimpleAlert from '@/components/SimpleAlert';
 
 const REWARD_TOKEN_ADDRESS = import.meta.env.VITE_REWARD_TOKEN_ADDRESS;
 
@@ -22,8 +23,6 @@ const Home: React.FC = () => {
 
   const provider = useEthersProvider();
   const signer = useEthersSigner();
-
-  const { getTokenInfo } = useContract();
 
   useEffect(() => {
     async function checkAdminRole() {
@@ -111,6 +110,8 @@ const Home: React.FC = () => {
       <Typography variant="h6" gutterBottom>
         Hourly Reward Rate: {Number(hourlyRewardRate).toFixed(2)} LIB
       </Typography>
+
+      <SimpleAlert />
 
       <TableContainer component={Paper} sx={{ mt: 3 }}>
         <Table>

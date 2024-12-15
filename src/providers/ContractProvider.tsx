@@ -11,6 +11,8 @@ import { rewardTokenAtom } from '@/store/rewardToken';
 import ERC20_ABI from '@/assets/abi/ERC20.json';
 import { notificationAtom } from '@/store/notification';
 import { ContractEvent } from '@/types';
+import useNotification from '@/hooks/useNotification';
+import useAlert from '@/hooks/useAlert';
 
 const STAKING_CONTRACT_ADDRESS = import.meta.env.VITE_STAKING_CONTRACT_ADDRESS as string;
 const REWARD_TOKEN_ADDRESS = import.meta.env.VITE_REWARD_TOKEN_ADDRESS as string;
@@ -106,18 +108,13 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
   const [rewardToken, setRewardToken] = useAtom(rewardTokenAtom);
   const [events, setEvents] = useState<ContractEvent[]>([]);
 
-  const [, setNotification] = useAtom(notificationAtom);
-
+  const { showNotification } = useNotification();
+  const { showAlert } = useAlert();
   const provider = useEthersProvider();
   const signer = useEthersSigner();
 
   useEffect(() => {
-    setNotification({
-      message: error?.message || '',
-      severity: 'error',
-      variant: 'filled',
-      duration: 6000,
-    });
+    showNotification(error?.message || '', 'error');
   }, [JSON.stringify(error)]);
 
   useEffect(() => {
@@ -198,6 +195,8 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
       transactionHash: event.transactionHash || '',
       blockNumber: event.blockNumber,
     };
+
+    showAlert(eventName, 'info');
     setEvents((prev) => [newEvent, ...prev]);
   };
 
