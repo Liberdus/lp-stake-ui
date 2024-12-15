@@ -1,11 +1,5 @@
 import { atom } from 'jotai';
-
-export interface UserInfo {
-  address: string | null;
-  isConnected: boolean;
-  isAdmin: boolean;
-  stakeInfo: any;
-}
+import { UserInfo } from '@/types';
 
 export const userInfoAtom = atom<UserInfo>({
   address: null,

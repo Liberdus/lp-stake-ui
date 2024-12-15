@@ -22,6 +22,7 @@ const theme = createTheme({
   },
   typography: {
     fontFamily: '"Exo", "Helvetica", "Arial", sans-serif',
+    fontSize: 15
   },
 });
 
