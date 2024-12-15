@@ -10,6 +10,7 @@ import { useAtom } from 'jotai';
 import { rewardTokenAtom } from '@/store/rewardToken';
 import ERC20_ABI from '@/assets/abi/ERC20.json';
 import { notificationAtom } from '@/store/notification';
+import { ContractEvent } from '@/types';
 
 const STAKING_CONTRACT_ADDRESS = import.meta.env.VITE_STAKING_CONTRACT_ADDRESS as string;
 const REWARD_TOKEN_ADDRESS = import.meta.env.VITE_REWARD_TOKEN_ADDRESS as string;
@@ -60,6 +61,9 @@ interface ContractContextType {
   // Token info
   getTokenInfo: (address: string) => Promise<TokenInfo>;
   getERC20Balance: (address: string, tokenAddress: string) => Promise<bigint>;
+
+  // Events
+  getEvents: () => ContractEvent[];
 }
 
 const ContractContext = createContext<ContractContextType>({
@@ -85,6 +89,7 @@ const ContractContext = createContext<ContractContextType>({
   getTVL: async () => BigInt(0),
   getTokenInfo: async () => ({ address: '', symbol: '', decimals: 0 }),
   getERC20Balance: async () => BigInt(0),
+  getEvents: () => [],
 });
 
 export const useContract = () => useContext(ContractContext);
@@ -99,6 +104,7 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const [rewardToken, setRewardToken] = useAtom(rewardTokenAtom);
+  const [events, setEvents] = useState<ContractEvent[]>([]);
 
   const [, setNotification] = useAtom(notificationAtom);
 
@@ -139,21 +145,68 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
 
   useEffect(() => {
     const getRewardToken = async () => {
-      const symbol = await rewardTokenContract?.symbol();
-      const decimals = await rewardTokenContract?.decimals();
-      setRewardToken({
-        address: REWARD_TOKEN_ADDRESS,
-        symbol: symbol,
-        decimals: decimals,
-      });
+      if (!rewardTokenContract) return;
+      try {
+        const symbol = await rewardTokenContract.symbol();
+        const decimals = await rewardTokenContract.decimals();
+        setRewardToken({
+          address: REWARD_TOKEN_ADDRESS,
+          symbol: symbol,
+          decimals: decimals,
+        });
+      } catch (err) {
+        console.error(err);
+      }
     };
     getRewardToken();
   }, [rewardTokenContract]);
+
+  // Add event listeners when the contract is ready
+  useEffect(() => {
+    if (!contract) return;
+
+    // Example: Listening to StakeAdded, StakeRemoved, RewardsClaimed events
+    const onStakeAdded = (user: string, lpToken: string, amount: bigint, event: ethers.EventLog) => {
+      addEvent('StakeAdded', [user, lpToken, amount], event);
+    };
+
+    const onStakeRemoved = (user: string, lpToken: string, amount: bigint, event: ethers.EventLog) => {
+      addEvent('StakeRemoved', [user, lpToken, amount], event);
+    };
+
+    const onRewardsClaimed = (user: string, lpToken: string, amount: bigint, event: ethers.EventLog) => {
+      addEvent('RewardsClaimed', [user, lpToken, amount], event);
+    };
+
+    // Attach listeners
+    contract.on('StakeAdded', onStakeAdded);
+    contract.on('StakeRemoved', onStakeRemoved);
+    contract.on('RewardsClaimed', onRewardsClaimed);
+
+    // Cleanup function to remove listeners on unmount or contract change
+    return () => {
+      contract.off('StakeAdded', onStakeAdded);
+      contract.off('StakeRemoved', onStakeRemoved);
+      contract.off('RewardsClaimed', onRewardsClaimed);
+    };
+  }, [contract]);
+
+  const addEvent = (eventName: string, args: any[], event: ethers.EventLog) => {
+    const newEvent: ContractEvent = {
+      eventName,
+      args,
+      transactionHash: event.transactionHash || '',
+      blockNumber: event.blockNumber,
+    };
+    setEvents((prev) => [newEvent, ...prev]);
+  };
 
   // Core staking functions
   const stake = async (lpToken: string, amount: string) => {
     if (!contract) throw new Error('Contract not initialized');
     try {
+      const tokenContract = new ethers.Contract(lpToken, ERC20_ABI, signer);
+      await tokenContract.approve(STAKING_CONTRACT_ADDRESS, ethers.parseEther(amount));
       const tx = await contract.stake(lpToken, ethers.parseEther(amount));
       await tx.wait();
     } catch (err) {
@@ -347,8 +400,6 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
     }
   };
 
-  const getMyShare = async (address: string) => {};
-
   const getERC20Balance = async (address: string, tokenAddress: string) => {
     if (!provider) throw new Error('Provider not initialized');
     try {
@@ -375,6 +426,8 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
       return { address: '', symbol: '', decimals: 0 };
     }
   };
+
+  const getEvents = () => events;
 
   return (
     <ContractContext.Provider
@@ -407,6 +460,8 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
         // Token info
         getTokenInfo,
         getERC20Balance,
+        // Events
+        getEvents,
       }}
     >
       {children}

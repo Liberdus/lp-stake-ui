@@ -37,4 +37,12 @@ interface UserStakeInfo {
   lastRewardTime: bigint;
 }
 
-export type { UserInfo, PairInfo, SCPairData, UserStakeInfo, TokenInfo };
+interface ContractEvent {
+  eventName: string;
+  args: any[];
+  transactionHash: string;
+  blockNumber: number;
+  blockTimestamp?: number;
+}
+
+export type { UserInfo, PairInfo, SCPairData, UserStakeInfo, TokenInfo, ContractEvent };

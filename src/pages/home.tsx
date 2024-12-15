@@ -26,12 +26,6 @@ const Home: React.FC = () => {
   const { getTokenInfo } = useContract();
 
   useEffect(() => {
-    getTokenInfo(REWARD_TOKEN_ADDRESS).then((tokenInfo) => {
-      console.log(tokenInfo);
-    });
-  }, []);
-
-  useEffect(() => {
     async function checkAdminRole() {
       if (contract && provider && signer) {
         const adminRole = await contract.ADMIN_ROLE();
@@ -58,12 +52,12 @@ const Home: React.FC = () => {
               let myEarnings = 0;
 
               const apr = pair.weight > 0 ? 15 + Math.random() * 5 : 0;
-              const tvl = Number(await getTVL(pair.lpToken));
+              const tvl = Number(ethers.formatEther(await getTVL(pair.lpToken)));
 
               if (signer) {
                 const userStake = await getUserStakeInfo(await signer.getAddress(), pair.lpToken);
-                myShare = (Number(userStake.amount) * 100) / tvl || 0;
-                myEarnings = Number(userStake.pendingRewards) || 0;
+                myShare = (Number(ethers.formatEther(userStake.amount)) * 100) / tvl || 0;
+                myEarnings = Number(ethers.formatEther(userStake.pendingRewards)) || 0;
               }
 
               return {
@@ -144,7 +138,7 @@ const Home: React.FC = () => {
                 <TableCell>
                   {ethers.formatEther(pair.weight)} ({((Number(pair.weight) * 100) / Number(pairs.reduce((acc, p) => acc + p.weight, BigInt(0)))).toFixed(2)}%)
                 </TableCell>
-                <TableCell>${(pair.tvl / 1000).toFixed(1)}K</TableCell>
+                <TableCell>{(pair.tvl).toFixed(2)}</TableCell>
                 <TableCell>
                   <Button onClick={() => handleShareClick(pair)} color="primary" disabled={!signer}>
                     {pair.myShare.toFixed(2)}%
