@@ -9,6 +9,8 @@ import { Container, Typography, Table, TableBody, TableCell, TableContainer, Tab
 import { PairInfo, SCPairData } from '@/types';
 import StakingModal from '@/components/StakingModal';
 
+const REWARD_TOKEN_ADDRESS = import.meta.env.VITE_REWARD_TOKEN_ADDRESS;
+
 const Home: React.FC = () => {
   const [userInfo, setUserInfo] = useAtom(userInfoAtom);
   const [pairs, setPairs] = useState<PairInfo[]>([]);
@@ -20,6 +22,14 @@ const Home: React.FC = () => {
 
   const provider = useEthersProvider();
   const signer = useEthersSigner();
+
+  const { getTokenInfo } = useContract();
+
+  useEffect(() => {
+    getTokenInfo(REWARD_TOKEN_ADDRESS).then((tokenInfo) => {
+      console.log(tokenInfo);
+    });
+  }, []);
 
   useEffect(() => {
     async function checkAdminRole() {

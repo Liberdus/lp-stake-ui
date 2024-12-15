@@ -1,7 +1,7 @@
 import { atom } from 'jotai';
-import { RewardTokenInfo } from '@/types';
+import { TokenInfo } from '@/types';
 
-export const rewardTokenAtom = atom<RewardTokenInfo>({
+export const rewardTokenAtom = atom<TokenInfo>({
   address: '',
   symbol: '',
   decimals: 0,

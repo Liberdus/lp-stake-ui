@@ -64,7 +64,7 @@ const StakingModal: React.FC<StakingModalProps> = ({ selectedPair, isModalOpen, 
               <Box className="flex justify-between">
                 <Typography>Stake {stakePercent}%</Typography>
                 <Typography>
-                  Balance: {selectedPair?.myShare.toFixed(4)}/{selectedPair?.myEarnings.toFixed(2)} UNI-V2
+                  Balance: {selectedPair?.myShare.toFixed(4)}/{selectedPair?.myEarnings.toFixed(2)} {selectedPair?.symbol}
                 </Typography>
               </Box>
               <Button variant="contained" onClick={handleStake} disabled={selectedPair?.weight === BigInt(0)} fullWidth>

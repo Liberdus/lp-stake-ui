@@ -25,13 +25,7 @@ interface PairInfo {
   myEarnings: number;
 }
 
-interface LPTokenInfo {
-  address: string;
-  symbol: string;
-  decimals: number;
-}
-
-interface RewardTokenInfo {
+interface TokenInfo {
   address: string;
   symbol: string;
   decimals: number;
@@ -43,4 +37,4 @@ interface UserStakeInfo {
   lastRewardTime: bigint;
 }
 
-export type { UserInfo, PairInfo, SCPairData, LPTokenInfo, UserStakeInfo, RewardTokenInfo };
+export type { UserInfo, PairInfo, SCPairData, UserStakeInfo, TokenInfo };
