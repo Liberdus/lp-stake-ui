@@ -16,12 +16,12 @@ const REWARD_TOKEN_ADDRESS = import.meta.env.VITE_REWARD_TOKEN_ADDRESS;
 const Home: React.FC = () => {
   const [userInfo, setUserInfo] = useAtom(userInfoAtom);
   const [pairs, setPairs] = useState<PairInfo[]>([]);
-  const [dailyRewardRate, setDailyRewardRate] = useState<string>('0');
+  const [hourlyRewardRate, setHourlyRewardRate] = useState<string>('0');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedPair, setSelectedPair] = useState<PairInfo | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const { contract, getPairs, getDailyRewardRate, getUserStakeInfo, getTVL, getPendingRewards } = useContract();
+  const { contract, getPairs, getHourlyRewardRate, getUserStakeInfo, getTVL, getPendingRewards } = useContract();
 
   const provider = useEthersProvider();
   const signer = useEthersSigner();
@@ -46,7 +46,7 @@ const Home: React.FC = () => {
       if (contract && provider) {
         try {
           const pairsData = await getPairs();
-          const dailyRate = await getDailyRewardRate();
+          const hourlyRate = await getHourlyRewardRate();
           const pairsInfo: PairInfo[] = await Promise.all(
             pairsData.map(async (pair: SCPairData) => {
               let myShare = 0;
@@ -55,7 +55,7 @@ const Home: React.FC = () => {
               const lpTokenPrice = await fetchTokenPrice(pair.lpToken);
               const rewardTokenPrice = await fetchTokenPrice(REWARD_TOKEN_ADDRESS);
 
-              const apr = calcAPR(Number(ethers.formatEther(dailyRate)), Number(ethers.formatEther(await getTVL(pair.lpToken))), lpTokenPrice, rewardTokenPrice);
+              const apr = calcAPR(Number(ethers.formatEther(hourlyRate)), Number(ethers.formatEther(await getTVL(pair.lpToken))), lpTokenPrice, rewardTokenPrice);
               const tvl = Number(ethers.formatEther(await getTVL(pair.lpToken)));
 
               if (signer) {
@@ -88,7 +88,7 @@ const Home: React.FC = () => {
             return b.apr - a.apr;
           });
           setPairs(sortedPairs);
-          setDailyRewardRate(ethers.formatEther(dailyRate));
+          setHourlyRewardRate(ethers.formatEther(hourlyRate));
         } catch (error) {
           console.error('Error fetching data:', error);
         }
@@ -114,7 +114,7 @@ const Home: React.FC = () => {
       </Typography>
 
       <Typography variant="h6" gutterBottom>
-        Daily Reward Rate: {Number(dailyRewardRate).toFixed(2)} LIB
+        Hourly Reward Rate: {Number(hourlyRewardRate).toFixed(2)} LIB
       </Typography>
 
       <SimpleAlert />

@@ -9,7 +9,7 @@ import useNotification from '@/hooks/useNotification';
 
 const Admin: React.FC = () => {
   const navigate = useNavigate();
-  const [newDailyRate, setNewDailyRate] = useState<string>('0');
+  const [newHourlyRate, setNewHourlyRate] = useState<string>('0');
   const [newPairAddress, setNewPairAddress] = useState<string>('');
   const [newPairName, setNewPairName] = useState<string>('');
   const [newPairPlatform, setNewPairPlatform] = useState<string>('');
@@ -24,7 +24,7 @@ const Admin: React.FC = () => {
   const [updatePairAddresses, setUpdatePairAddresses] = useState<string[]>(['']);
   const [updatePairWeights, setUpdatePairWeights] = useState<string[]>(['0']);
 
-  const { contract, proposeSetDailyRewardRate, proposeAddPair, proposeUpdatePairWeights, approveAction, executeAction } = useContract();
+  const { contract, proposeSetHourlyRewardRate, proposeAddPair, proposeUpdatePairWeights, approveAction, executeAction } = useContract();
   const [maxWeight, setMaxWeight] = useState<number>();
 
   const { showNotification } = useNotification();
@@ -64,12 +64,12 @@ const Admin: React.FC = () => {
     return null;
   }
 
-  const handleProposeDailyRate = async () => {
-    if (newDailyRate !== '0') {
+  const handleProposeHourlyRate = async () => {
+    if (newHourlyRate !== '0') {
       try {
-        await proposeSetDailyRewardRate(newDailyRate);
+        await proposeSetHourlyRewardRate(newHourlyRate);
       } catch (error) {
-        console.error('Error proposing daily rate:', error);
+        console.error('Error proposing hourly rate:', error);
       }
     }
   };
@@ -171,12 +171,12 @@ const Admin: React.FC = () => {
           <Card>
             <CardContent>
               <Typography variant="h5" gutterBottom>
-                Set Daily Reward Rate
+                Set Hourly Reward Rate
               </Typography>
-              <TextField type="number" fullWidth value={newDailyRate} onChange={(e) => setNewDailyRate(e.target.value)} placeholder="New daily rate" margin="normal" />
+              <TextField type="number" fullWidth value={newHourlyRate} onChange={(e) => setNewHourlyRate(e.target.value)} placeholder="New hourly rate" margin="normal" />
             </CardContent>
             <CardActions>
-              <Button fullWidth variant="contained" onClick={handleProposeDailyRate} disabled={newDailyRate === '0'}>
+              <Button fullWidth variant="contained" onClick={handleProposeHourlyRate} disabled={newHourlyRate === '0'}>
                 Propose New Rate
               </Button>
             </CardActions>

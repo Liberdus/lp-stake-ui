@@ -27,7 +27,7 @@ interface ContractContextType {
   claimRewards: (lpToken: string) => Promise<void>;
 
   // Propose functions
-  proposeSetDailyRewardRate: (newRate: string) => Promise<void>;
+  proposeSetHourlyRewardRate: (newRate: string) => Promise<void>;
   proposeUpdatePairWeights: (lpTokens: string[], weights: string[]) => Promise<void>;
   proposeAddPair: (lpToken: string, pairName: string, platform: string, weight: string) => Promise<void>;
   approveAction: (actionId: number) => Promise<void>;
@@ -54,7 +54,7 @@ interface ContractContextType {
   getPairs: () => Promise<SCPairData[]>;
 
   // Contract state
-  getDailyRewardRate: () => Promise<bigint>;
+  getHourlyRewardRate: () => Promise<bigint>;
   getTotalWeight: () => Promise<bigint>;
   getRewardToken: () => Promise<string>;
   getSigners: () => Promise<string[]>;
@@ -76,7 +76,7 @@ const ContractContext = createContext<ContractContextType>({
   stake: async () => {},
   unstake: async () => {},
   claimRewards: async () => {},
-  proposeSetDailyRewardRate: async () => {},
+  proposeSetHourlyRewardRate: async () => {},
   proposeUpdatePairWeights: async () => {},
   proposeAddPair: async () => {},
   approveAction: async () => {},
@@ -85,7 +85,7 @@ const ContractContext = createContext<ContractContextType>({
   getUserStakeInfo: async () => ({ amount: BigInt(0), pendingRewards: BigInt(0), lastRewardTime: BigInt(0) }),
   getPairInfo: async () => ({ token: '', platform: '', weight: BigInt(0), isActive: false }),
   getPairs: async () => [],
-  getDailyRewardRate: async () => BigInt(0),
+  getHourlyRewardRate: async () => BigInt(0),
   getTotalWeight: async () => BigInt(0),
   getRewardToken: async () => '',
   getSigners: async () => [],
@@ -239,14 +239,14 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
   };
 
   // Propose functions
-  const proposeSetDailyRewardRate = async (newRate: string) => {
+  const proposeSetHourlyRewardRate = async (newRate: string) => {
     if (!contract) throw new Error('Contract not initialized');
     try {
-      const tx = await contract.proposeSetDailyRewardRate(ethers.parseEther(newRate));
+      const tx = await contract.proposeSetHourlyRewardRate(ethers.parseEther(newRate));
       await tx.wait();
     } catch (err) {
       console.log(err);
-      setError(new Error('Failed to propose set daily reward rate'));
+      setError(new Error('Failed to propose set hourly reward rate'));
     }
   };
 
@@ -297,7 +297,7 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
 
   const calculatePendingRewards = async (userAddress: string, lpTokenAddress: string) => {
     if (!contract || !provider || !rewardTokenContract) throw new Error('Contract not initialized');
-    const dailyRewardRate = Number(ethers.formatEther(await contract.dailyRewardRate()));
+    const hourlyRewardRate = Number(ethers.formatEther(await contract.hourlyRewardRate()));
     const totalWeight = Number(ethers.formatEther(await contract.totalWeight()));
     const pairInfo = await contract.getPairInfo(lpTokenAddress);
     const userStakeInfo = await getUserStakeInfo(userAddress, lpTokenAddress);
@@ -317,7 +317,7 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
     if (totalWeight == 0 || pairWeight == 0 || totalLPSupply == 0) {
       return 0;
     }
-    const rewardPerSecond = dailyRewardRate / 86400;
+    const rewardPerSecond = hourlyRewardRate / 3600;
     const pairRewards = (rewardPerSecond * timeElapsed * pairWeight) / totalWeight;
     const availableRewards = pendingRewards + (pairRewards * userStakeAmount) / totalLPSupply;
 
@@ -367,13 +367,13 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
   };
 
   // Contract state
-  const getDailyRewardRate = async () => {
+  const getHourlyRewardRate = async () => {
     if (!contract) throw new Error('Contract not initialized');
     try {
-      return await contract.dailyRewardRate();
+      return await contract.hourlyRewardRate();
     } catch (err) {
       console.log(err);
-      setError(new Error('Failed to get daily reward rate'));
+      setError(new Error('Failed to get hourly reward rate'));
       return BigInt(0);
     }
   };
@@ -475,7 +475,7 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
         unstake,
         claimRewards,
         // Propose functions
-        proposeSetDailyRewardRate,
+        proposeSetHourlyRewardRate,
         proposeUpdatePairWeights,
         proposeAddPair,
         approveAction,
@@ -487,7 +487,7 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
         getPairInfo,
         getPairs,
         // Contract state
-        getDailyRewardRate,
+        getHourlyRewardRate,
         getTotalWeight,
         getRewardToken,
         getSigners,

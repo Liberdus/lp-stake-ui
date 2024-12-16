@@ -119,7 +119,7 @@
         "type": "uint256"
       }
     ],
-    "name": "DailyRateUpdated",
+    "name": "HourlyRateUpdated",
     "type": "event"
   },
   {
@@ -183,6 +183,25 @@
       }
     ],
     "name": "RewardsClaimed",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "recipient",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "RewardsWithdrawn",
     "type": "event"
   },
   {
@@ -495,7 +514,7 @@
       },
       {
         "internalType": "uint256",
-        "name": "newDailyRewardRate",
+        "name": "newHourlyRewardRate",
         "type": "uint256"
       },
       {
@@ -573,24 +592,6 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "oldSigner",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "newSigner",
-        "type": "address"
-      }
-    ],
-    "name": "changeSigner",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
         "name": "lpToken",
         "type": "address"
       }
@@ -598,19 +599,6 @@
     "name": "claimRewards",
     "outputs": [],
     "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "dailyRewardRate",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -858,6 +846,19 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "hourlyRewardRate",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "address",
@@ -934,6 +935,30 @@
     "inputs": [
       {
         "internalType": "address",
+        "name": "oldSigner",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "newSigner",
+        "type": "address"
+      }
+    ],
+    "name": "proposeChangeSigner",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
         "name": "lpToken",
         "type": "address"
       }
@@ -957,7 +982,7 @@
         "type": "uint256"
       }
     ],
-    "name": "proposeSetDailyRewardRate",
+    "name": "proposeSetHourlyRewardRate",
     "outputs": [
       {
         "internalType": "uint256",
@@ -1160,6 +1185,24 @@
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "recipient",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "withdrawRewards",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   }
 ]
