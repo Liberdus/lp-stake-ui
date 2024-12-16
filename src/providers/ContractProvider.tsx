@@ -120,7 +120,7 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
   const signer = useEthersSigner();
 
   useEffect(() => {
-    showNotification(error?.message || '', 'error');
+    showNotification('error', error?.message || '');
   }, [JSON.stringify(error)]);
 
   useEffect(() => {

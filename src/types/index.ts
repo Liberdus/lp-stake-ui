@@ -45,4 +45,17 @@ interface ContractEvent {
   blockTimestamp?: number;
 }
 
-export type { UserInfo, PairInfo, SCPairData, UserStakeInfo, TokenInfo, ContractEvent };
+interface Action {
+  actionType: number;
+  newHourlyRewardRate: bigint;
+  pairToAdd: string;
+  pairNameToAdd: string;
+  platformToAdd: string;
+  weightToAdd: bigint;
+  pairToRemove: string;
+  executed: boolean;
+  approvals: number;
+  approvedBy: string[];
+}
+
+export type { UserInfo, PairInfo, SCPairData, UserStakeInfo, TokenInfo, ContractEvent, Action };
