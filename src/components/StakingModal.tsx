@@ -19,8 +19,9 @@ const StakingModal: React.FC<StakingModalProps> = ({ selectedPair, isModalOpen, 
   const [unstakePercent, setUnstakePercent] = useState<number>(100);
   const [balance, setBalance] = useState<number>(0);
   const [tokenInfo, setTokenInfo] = useState<TokenInfo | null>(null);
+  const [pendingRewards, setPendingRewards] = useState<number>(0);
 
-  const { stake, unstake, claimRewards, getTokenInfo, getERC20Balance } = useContract();
+  const { stake, unstake, claimRewards, getTokenInfo, getERC20Balance, getPendingRewards } = useContract();
   const signer = useEthersSigner();
   
   const handleStake = async () => {
@@ -55,11 +56,14 @@ const StakingModal: React.FC<StakingModalProps> = ({ selectedPair, isModalOpen, 
 
   useEffect(() => {
     async function fetchData() {
-      if (!signer) return;
-      const tokenInfo = await getTokenInfo(selectedPair?.lpToken || '');
-      const tokenBalanceOfSigner = await getERC20Balance(signer?.address || '', selectedPair?.lpToken || '');
+      if (!signer || !selectedPair) return;
+      const tokenInfo = await getTokenInfo(selectedPair.lpToken);
+      const tokenBalanceOfSigner = await getERC20Balance(signer.address, selectedPair.lpToken);
+      const pendingRewards = await getPendingRewards(signer.address, selectedPair.lpToken);
       setTokenInfo(tokenInfo);
       setBalance(Number(ethers.formatUnits(tokenBalanceOfSigner, tokenInfo.decimals)));
+      setPendingRewards(pendingRewards);
+      console.log(pendingRewards);
     }
     fetchData();
   }, [selectedPair, signer]);
@@ -103,8 +107,8 @@ const StakingModal: React.FC<StakingModalProps> = ({ selectedPair, isModalOpen, 
 
           {tabValue === 2 && (
             <Stack spacing={3}>
-              <Typography>Available to withdraw: {selectedPair?.myEarnings.toFixed(2)} {tokenInfo?.symbol}</Typography>
-              <Button variant="contained" onClick={handleWithdraw} disabled={!selectedPair?.myEarnings} fullWidth>
+              <Typography>Available to withdraw: {pendingRewards.toFixed(4)} LIB</Typography>
+              <Button variant="contained" onClick={handleWithdraw} disabled={pendingRewards === 0} fullWidth>
                 Withdraw All
               </Button>
             </Stack>

@@ -34,6 +34,7 @@ interface ContractContextType {
   executeAction: (actionId: number) => Promise<void>;
 
   // User info
+  getPendingRewards: (userAddress: string, lpToken: string) => Promise<number>;
   getUserStakeInfo: (
     userAddress: string,
     lpToken: string
@@ -80,6 +81,7 @@ const ContractContext = createContext<ContractContextType>({
   proposeAddPair: async () => {},
   approveAction: async () => {},
   executeAction: async () => {},
+  getPendingRewards: async () => 0,
   getUserStakeInfo: async () => ({ amount: BigInt(0), pendingRewards: BigInt(0), lastRewardTime: BigInt(0) }),
   getPairInfo: async () => ({ token: '', platform: '', weight: BigInt(0), isActive: false }),
   getPairs: async () => [],
@@ -293,11 +295,57 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
     }
   };
 
+  const calculatePendingRewards = async (userAddress: string, lpTokenAddress: string) => {
+    if (!contract || !provider || !rewardTokenContract) throw new Error('Contract not initialized');
+    // Fetch contract constants and state variables
+    const dailyRewardRate = Number(ethers.formatEther(await contract.dailyRewardRate()));
+    const totalWeight = Number(ethers.formatEther(await contract.totalWeight()));
+    const pairInfo = await contract.getPairInfo(lpTokenAddress);
+    const userStakeInfo = await getUserStakeInfo(userAddress, lpTokenAddress);
+
+    
+    const pairWeight = Number(ethers.formatEther(pairInfo.weight));
+    const userStakeAmount = Number(ethers.formatEther(userStakeInfo.amount));
+    const lastRewardTime = Number(userStakeInfo.lastRewardTime);
+    const pendingRewards = Number(ethers.formatEther(userStakeInfo.pendingRewards));
+
+    const currentBlock = await provider.getBlock('latest');
+    console.log("Current Block", currentBlock);
+    console.log("Current Block Number", currentBlock?.number);
+    const currentTimestamp = currentBlock?.timestamp || 0;
+    console.log("Current Timestamp", currentTimestamp);
+    console.log("Current Last Reward Time", lastRewardTime);
+    const timeElapsed = currentTimestamp - lastRewardTime;
+    console.log("Current Time Elapsed", timeElapsed);
+
+    const totalLPSupply = Number(ethers.formatEther(await rewardTokenContract.balanceOf(STAKING_CONTRACT_ADDRESS)));
+
+    if (totalWeight == 0 || pairWeight == 0 || totalLPSupply == 0) {
+      return 0;
+    }
+    console.log("Current Pending Rewards", pendingRewards);
+    console.log("Current Time Elapsed", timeElapsed);
+    console.log("Current Pair Weight", pairWeight);
+    console.log("Current Total Weight", totalWeight);
+    console.log("Current Total LPSupply", totalLPSupply);
+    console.log("Current User Stake Amount", userStakeAmount);
+    const rewardPerSecond = dailyRewardRate / 86400;
+    const pairRewards = (rewardPerSecond * timeElapsed * pairWeight) / totalWeight;
+    const availableRewards = pendingRewards + (pairRewards * userStakeAmount) / totalLPSupply;
+
+    return availableRewards;
+  }
+
+  const getPendingRewards = async (userAddress: string, lpToken: string) => {
+    if (!contract || !provider || !rewardTokenContract) throw new Error('Contract not initialized');
+    return await calculatePendingRewards(userAddress, lpToken);
+  };
+
   // User info
   const getUserStakeInfo = async (userAddress: string, lpToken: string) => {
     if (!contract) throw new Error('Contract not initialized');
     try {
-      const [amount, pendingRewards, lastRewardTime] = await contract.userStakes(userAddress, lpToken);
+      const [amount, pendingRewards, lastRewardTime] = await contract.getUserStakeInfo(userAddress, lpToken);
       return { amount, pendingRewards, lastRewardTime };
     } catch (err) {
       console.log(err);
@@ -446,6 +494,7 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
         executeAction,
         // User info
         getUserStakeInfo,
+        getPendingRewards,
         // Pair info
         getPairInfo,
         getPairs,

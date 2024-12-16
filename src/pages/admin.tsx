@@ -5,6 +5,7 @@ import { userInfoAtom } from '@/store/userInfo';
 import { useNavigate } from 'react-router-dom';
 import { useContract } from '@/providers/ContractProvider';
 import { Container, Typography, Box, Paper, TextField, Button, Grid, Card, CardContent, CardActions, Alert, Divider } from '@mui/material';
+import useNotification from '@/hooks/useNotification';
 
 const Admin: React.FC = () => {
   const navigate = useNavigate();
@@ -25,6 +26,8 @@ const Admin: React.FC = () => {
 
   const { contract, proposeSetDailyRewardRate, proposeAddPair, proposeUpdatePairWeights, approveAction, executeAction } = useContract();
   const [maxWeight, setMaxWeight] = useState<number>();
+
+  const { showNotification } = useNotification();
 
   useEffect(() => {
     async function loadContractData() {
@@ -92,7 +95,8 @@ const Admin: React.FC = () => {
         }
 
         await proposeAddPair(newPairAddress, newPairName, newPairPlatform, newPairWeight);
-      } catch (error) {
+      } catch (error: any) {
+        showNotification('error', error?.data?.data?.message || 'Error proposing new pair');
         console.error('Error proposing new pair:', error);
       }
     }
@@ -128,7 +132,8 @@ const Admin: React.FC = () => {
       }
 
       await proposeUpdatePairWeights(updatePairAddresses, updatePairWeights);
-    } catch (error) {
+    } catch (error: any) {
+      showNotification('error', error?.data?.data?.message || 'Error proposing weight updates');
       console.error('Error proposing weight updates:', error);
     }
   };
@@ -137,7 +142,8 @@ const Admin: React.FC = () => {
     if (actionId) {
       try {
         await approveAction(Number(actionId));
-      } catch (error) {
+      } catch (error: any) {
+        showNotification('error', error?.data?.data?.message || 'Error approving action');
         console.error('Error approving action:', error);
       }
     }
@@ -147,7 +153,8 @@ const Admin: React.FC = () => {
     if (actionId) {
       try {
         await executeAction(Number(actionId));
-      } catch (error) {
+      } catch (error: any) {
+        showNotification('error', error?.data?.data?.message || 'Error executing action');
         console.error('Error executing action:', error);
       }
     }
