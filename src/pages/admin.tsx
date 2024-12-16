@@ -4,7 +4,7 @@ import { useAtom } from 'jotai';
 import { userInfoAtom } from '@/store/userInfo';
 import { useNavigate } from 'react-router-dom';
 import { useContract } from '@/providers/ContractProvider';
-import { Container, Typography, Box, Paper, TextField, Button, Grid, Card, CardContent, CardActions, Alert, Divider } from '@mui/material';
+import { Container, Typography, Box, Paper, TextField, Button, Grid, Card, CardContent, CardActions, Divider } from '@mui/material';
 import useNotification from '@/hooks/useNotification';
 
 const Admin: React.FC = () => {
@@ -18,7 +18,7 @@ const Admin: React.FC = () => {
   const [actionCounter, setActionCounter] = useState<bigint>();
   const [requiredApprovals, setRequiredApprovals] = useState<bigint>();
   const [actionDetails, setActionDetails] = useState<any>();
-  const [userInfo, setUserInfo] = useAtom(userInfoAtom);
+  const [userInfo] = useAtom(userInfoAtom);
 
   // New states for update weights
   const [updatePairAddresses, setUpdatePairAddresses] = useState<string[]>(['']);

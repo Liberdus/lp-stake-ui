@@ -9,6 +9,7 @@ import { Container, Typography, Table, TableBody, TableCell, TableContainer, Tab
 import { PairInfo, SCPairData } from '@/types';
 import StakingModal from '@/components/StakingModal';
 import SimpleAlert from '@/components/SimpleAlert';
+import { calcAPR, fetchTokenPrice } from '@/utils';
 
 const REWARD_TOKEN_ADDRESS = import.meta.env.VITE_REWARD_TOKEN_ADDRESS;
 
@@ -19,7 +20,7 @@ const Home: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedPair, setSelectedPair] = useState<PairInfo | null>(null);
 
-  const { contract, getPairs, getDailyRewardRate, getUserStakeInfo, getTotalWeight, getTVL, getPendingRewards } = useContract();
+  const { contract, getPairs, getDailyRewardRate, getUserStakeInfo, getTVL, getPendingRewards } = useContract();
 
   const provider = useEthersProvider();
   const signer = useEthersSigner();
@@ -44,13 +45,15 @@ const Home: React.FC = () => {
         try {
           const pairsData = await getPairs();
           const dailyRate = await getDailyRewardRate();
-          const totalWeight = await getTotalWeight();
           const pairsInfo: PairInfo[] = await Promise.all(
             pairsData.map(async (pair: SCPairData) => {
               let myShare = 0;
               let myEarnings = 0;
 
-              const apr = pair.weight > 0 ? 15 + Math.random() * 5 : 0;
+              const lpTokenPrice = await fetchTokenPrice(pair.lpToken);
+              const rewardTokenPrice = await fetchTokenPrice(REWARD_TOKEN_ADDRESS);
+
+              const apr = calcAPR(Number(ethers.formatEther(dailyRate)), Number(ethers.formatEther(await getTVL(pair.lpToken))), lpTokenPrice, rewardTokenPrice);
               const tvl = Number(ethers.formatEther(await getTVL(pair.lpToken)));
 
               if (signer) {
