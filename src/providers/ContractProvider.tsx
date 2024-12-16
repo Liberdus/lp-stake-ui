@@ -297,7 +297,6 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
 
   const calculatePendingRewards = async (userAddress: string, lpTokenAddress: string) => {
     if (!contract || !provider || !rewardTokenContract) throw new Error('Contract not initialized');
-    // Fetch contract constants and state variables
     const dailyRewardRate = Number(ethers.formatEther(await contract.dailyRewardRate()));
     const totalWeight = Number(ethers.formatEther(await contract.totalWeight()));
     const pairInfo = await contract.getPairInfo(lpTokenAddress);
@@ -310,25 +309,14 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
     const pendingRewards = Number(ethers.formatEther(userStakeInfo.pendingRewards));
 
     const currentBlock = await provider.getBlock('latest');
-    console.log("Current Block", currentBlock);
-    console.log("Current Block Number", currentBlock?.number);
     const currentTimestamp = currentBlock?.timestamp || 0;
-    console.log("Current Timestamp", currentTimestamp);
-    console.log("Current Last Reward Time", lastRewardTime);
     const timeElapsed = currentTimestamp - lastRewardTime;
-    console.log("Current Time Elapsed", timeElapsed);
 
     const totalLPSupply = Number(ethers.formatEther(await rewardTokenContract.balanceOf(STAKING_CONTRACT_ADDRESS)));
 
     if (totalWeight == 0 || pairWeight == 0 || totalLPSupply == 0) {
       return 0;
     }
-    console.log("Current Pending Rewards", pendingRewards);
-    console.log("Current Time Elapsed", timeElapsed);
-    console.log("Current Pair Weight", pairWeight);
-    console.log("Current Total Weight", totalWeight);
-    console.log("Current Total LPSupply", totalLPSupply);
-    console.log("Current User Stake Amount", userStakeAmount);
     const rewardPerSecond = dailyRewardRate / 86400;
     const pairRewards = (rewardPerSecond * timeElapsed * pairWeight) / totalWeight;
     const availableRewards = pendingRewards + (pairRewards * userStakeAmount) / totalLPSupply;
