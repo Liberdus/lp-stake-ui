@@ -15,7 +15,7 @@ const REWARD_TOKEN_ADDRESS = import.meta.env.VITE_REWARD_TOKEN_ADDRESS;
 const Home: React.FC = () => {
   const [userInfo, setUserInfo] = useAtom(userInfoAtom);
   const [pairs, setPairs] = useState<PairInfo[]>([]);
-  const [hourlyRewardRate, setHourlyRewardRate] = useState<string>('0');
+  const [dailyRewardRate, setDailyRewardRate] = useState<string>('0');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedPair, setSelectedPair] = useState<PairInfo | null>(null);
 
@@ -83,7 +83,7 @@ const Home: React.FC = () => {
             return b.apr - a.apr;
           });
           setPairs(sortedPairs);
-          setHourlyRewardRate(ethers.formatEther(dailyRate / BigInt(24)));
+          setDailyRewardRate(ethers.formatEther(dailyRate));
         } catch (error) {
           console.error('Error fetching data:', error);
         }
@@ -108,7 +108,7 @@ const Home: React.FC = () => {
       </Typography>
 
       <Typography variant="h6" gutterBottom>
-        Hourly Reward Rate: {Number(hourlyRewardRate).toFixed(2)} LIB
+        Daily Reward Rate: {Number(dailyRewardRate).toFixed(2)} LIB
       </Typography>
 
       <SimpleAlert />
