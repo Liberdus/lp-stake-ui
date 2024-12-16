@@ -5,7 +5,7 @@ import { useEthersSigner } from '@/hooks/useEthersSigner';
 import { useEthersProvider } from '@/hooks/useEthersProvider';
 import { useContract } from '@/providers/ContractProvider';
 import { ethers } from 'ethers';
-import { Container, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button } from '@mui/material';
+import { Container, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, Skeleton } from '@mui/material';
 import { PairInfo, SCPairData } from '@/types';
 import StakingModal from '@/components/StakingModal';
 import SimpleAlert from '@/components/SimpleAlert';
@@ -19,6 +19,7 @@ const Home: React.FC = () => {
   const [dailyRewardRate, setDailyRewardRate] = useState<string>('0');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedPair, setSelectedPair] = useState<PairInfo | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   const { contract, getPairs, getDailyRewardRate, getUserStakeInfo, getTVL, getPendingRewards } = useContract();
 
@@ -41,6 +42,7 @@ const Home: React.FC = () => {
 
   useEffect(() => {
     async function fetchData() {
+      setIsLoading(true);
       if (contract && provider) {
         try {
           const pairsData = await getPairs();
@@ -91,6 +93,7 @@ const Home: React.FC = () => {
           console.error('Error fetching data:', error);
         }
       }
+      setIsLoading(false);
     }
     fetchData();
   }, [contract, provider, signer]);
@@ -130,6 +133,25 @@ const Home: React.FC = () => {
             </TableRow>
           </TableHead>
           <TableBody>
+            {isLoading && (
+              <>
+                <TableRow>
+                  <TableCell colSpan={7} align="center">
+                    <Skeleton variant="rectangular" height={40} />
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell colSpan={7} align="center">
+                    <Skeleton variant="rectangular" height={40} />
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell colSpan={7} align="center">
+                    <Skeleton variant="rectangular" height={40} />
+                  </TableCell>
+                </TableRow>
+              </>
+            )}
             {pairs.map((pair) => (
               <TableRow key={pair.lpToken}>
                 <TableCell>
@@ -142,7 +164,7 @@ const Home: React.FC = () => {
                 <TableCell>
                   {ethers.formatEther(pair.weight)} ({((Number(pair.weight) * 100) / Number(pairs.reduce((acc, p) => acc + p.weight, BigInt(0)))).toFixed(2)}%)
                 </TableCell>
-                <TableCell>{(pair.tvl).toFixed(2)}</TableCell>
+                <TableCell>{pair.tvl.toFixed(2)}</TableCell>
                 <TableCell>
                   <Button onClick={() => handleShareClick(pair)} color="primary" disabled={!signer}>
                     {pair.myShare.toFixed(2)}%
