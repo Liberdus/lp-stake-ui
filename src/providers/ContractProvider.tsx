@@ -30,6 +30,8 @@ interface ContractContextType {
   proposeSetHourlyRewardRate: (newRate: string) => Promise<void>;
   proposeUpdatePairWeights: (lpTokens: string[], weights: string[]) => Promise<void>;
   proposeAddPair: (lpToken: string, pairName: string, platform: string, weight: string) => Promise<void>;
+  proposeRemovePair: (lpToken: string) => Promise<void>;
+  proposeChangeSigner: (oldSigner: string, newSigner: string) => Promise<void>;
   approveAction: (actionId: number) => Promise<void>;
   executeAction: (actionId: number) => Promise<void>;
 
@@ -79,6 +81,8 @@ const ContractContext = createContext<ContractContextType>({
   proposeSetHourlyRewardRate: async () => {},
   proposeUpdatePairWeights: async () => {},
   proposeAddPair: async () => {},
+  proposeRemovePair: async () => {},
+  proposeChangeSigner: async () => {},
   approveAction: async () => {},
   executeAction: async () => {},
   getPendingRewards: async () => 0,
@@ -270,6 +274,28 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
     } catch (err) {
       console.log(err);
       setError(new Error('Failed to propose add pair'));
+    }
+  };
+  
+  const proposeRemovePair = async (lpToken: string) => {
+    if (!contract) throw new Error('Contract not initialized');
+    try {
+      const tx = await contract.proposeRemovePair(lpToken);
+      await tx.wait();
+    } catch (err) {
+      console.log(err);
+      setError(new Error('Failed to propose remove pair'));
+    }
+  };
+
+  const proposeChangeSigner = async (oldSigner: string, newSigner: string) => {
+    if (!contract) throw new Error('Contract not initialized');
+    try {
+      const tx = await contract.proposeChangeSigner(oldSigner, newSigner);
+      await tx.wait();
+    } catch (err) {
+      console.log(err);
+      setError(new Error('Failed to propose change signer'));
     }
   };
 
@@ -478,6 +504,8 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
         proposeSetHourlyRewardRate,
         proposeUpdatePairWeights,
         proposeAddPair,
+        proposeRemovePair,
+        proposeChangeSigner,
         approveAction,
         executeAction,
         // User info

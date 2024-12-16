@@ -24,7 +24,11 @@ const Admin: React.FC = () => {
   const [updatePairAddresses, setUpdatePairAddresses] = useState<string[]>(['']);
   const [updatePairWeights, setUpdatePairWeights] = useState<string[]>(['0']);
 
-  const { contract, proposeSetHourlyRewardRate, proposeAddPair, proposeUpdatePairWeights, approveAction, executeAction } = useContract();
+  const [removePairAddress, setRemovePairAddress] = useState<string>('');
+  const [newSignerAddress, setNewSignerAddress] = useState<string>('');
+  const [oldSignerAddress, setOldSignerAddress] = useState<string>('');
+
+  const { contract, proposeSetHourlyRewardRate, proposeAddPair, proposeUpdatePairWeights, proposeRemovePair, proposeChangeSigner, approveAction, executeAction } = useContract();
   const [maxWeight, setMaxWeight] = useState<number>();
 
   const { showNotification } = useNotification();
@@ -138,6 +142,38 @@ const Admin: React.FC = () => {
     }
   };
 
+  const handleProposeRemovePair = async () => {
+    if (removePairAddress) {
+      try {
+        if (!ethers.isAddress(removePairAddress)) {
+          alert('Invalid LP token address format');
+          return;
+        }
+
+        await proposeRemovePair(removePairAddress);
+      } catch (error: any) {
+        showNotification('error', error?.data?.data?.message || 'Error proposing pair removal');
+        console.error('Error proposing pair removal:', error);
+      }
+    }
+  };
+
+  const handleProposeChangeSigner = async () => {
+    if (oldSignerAddress && newSignerAddress) {
+      try {
+        if (!ethers.isAddress(newSignerAddress)) {
+          alert('Invalid signer address format');
+          return;
+        }
+
+        await proposeChangeSigner(oldSignerAddress, newSignerAddress);
+      } catch (error: any) {
+        showNotification('error', error?.data?.data?.message || 'Error proposing signer change');
+        console.error('Error proposing signer change:', error);
+      }
+    }
+  };
+
   const handleApproveAction = async () => {
     if (actionId) {
       try {
@@ -167,6 +203,7 @@ const Admin: React.FC = () => {
       </Typography>
 
       <Grid container spacing={3}>
+        {/* Existing Cards */}
         <Grid item xs={12}>
           <Card>
             <CardContent>
@@ -245,6 +282,39 @@ const Admin: React.FC = () => {
                 </Button>
               </Box>
             </CardContent>
+          </Card>
+        </Grid>
+
+        <Grid item xs={12}>
+          <Card>
+            <CardContent>
+              <Typography variant="h5" gutterBottom>
+                Remove Pair
+              </Typography>
+              <TextField fullWidth value={removePairAddress} onChange={(e) => setRemovePairAddress(e.target.value)} placeholder="LP Token Address to Remove" margin="normal" />
+            </CardContent>
+            <CardActions>
+              <Button fullWidth variant="contained" color="error" onClick={handleProposeRemovePair} disabled={!removePairAddress}>
+                Propose Remove Pair
+              </Button>
+            </CardActions>
+          </Card>
+        </Grid>
+
+        <Grid item xs={12}>
+          <Card>
+            <CardContent>
+              <Typography variant="h5" gutterBottom>
+                Change Signer
+              </Typography>
+              <TextField fullWidth value={oldSignerAddress} onChange={(e) => setOldSignerAddress(e.target.value)} placeholder="Old Signer Address" margin="normal" />
+              <TextField fullWidth value={newSignerAddress} onChange={(e) => setNewSignerAddress(e.target.value)} placeholder="New Signer Address" margin="normal" />
+            </CardContent>
+            <CardActions>
+              <Button fullWidth variant="contained" color="warning" onClick={handleProposeChangeSigner} disabled={!newSignerAddress}>
+                Propose Change Signer
+              </Button>
+            </CardActions>
           </Card>
         </Grid>
 
