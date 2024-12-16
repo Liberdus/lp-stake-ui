@@ -153,6 +153,19 @@
       {
         "indexed": false,
         "internalType": "address",
+        "name": "lpToken",
+        "type": "address"
+      }
+    ],
+    "name": "PairRemoved",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
         "name": "user",
         "type": "address"
       },
@@ -504,6 +517,11 @@
         "internalType": "uint256",
         "name": "weightToAdd",
         "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "pairToRemove",
+        "type": "address"
       },
       {
         "internalType": "bool",
@@ -902,6 +920,25 @@
       }
     ],
     "name": "proposeAddPair",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "lpToken",
+        "type": "address"
+      }
+    ],
+    "name": "proposeRemovePair",
     "outputs": [
       {
         "internalType": "uint256",

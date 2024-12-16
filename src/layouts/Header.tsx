@@ -4,12 +4,21 @@ import logo from '../assets/logo.png';
 import { AppBar, Toolbar, Typography, Box, Button, Container, useTheme, useMediaQuery, IconButton, Menu, MenuItem } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import { useState } from 'react';
+import { colorModeAtom } from '@/store/colorMode';
+import { useAtom } from 'jotai';
+import LightModeIcon from '@mui/icons-material/LightModeOutlined';
+import BedtimeIcon from '@mui/icons-material/BedtimeOutlined';
 
 const Header: React.FC = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
+  const [colorTheme, setColorTheme] = useAtom(colorModeAtom);
+
+  const toggleColorMode = () => {
+    setColorTheme(colorTheme === 'light' ? 'dark' : 'light');
+  };
 
   const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -94,6 +103,9 @@ const Header: React.FC = () => {
               <Button component={Link} to="/" color="inherit">Home</Button>
               <Button component={Link} to="/admin" color="inherit">Admin Panel</Button>
               <ConnectButton accountStatus="avatar" chainStatus="icon" />
+              <Button onClick={toggleColorMode}>
+                {colorTheme === 'light' ? <LightModeIcon /> : <BedtimeIcon />}
+              </Button>
             </Box>
           )}
         </Toolbar>

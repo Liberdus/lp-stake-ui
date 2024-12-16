@@ -19,7 +19,7 @@ const Home: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedPair, setSelectedPair] = useState<PairInfo | null>(null);
 
-  const { contract, getPairs, getDailyRewardRate, getUserStakeInfo, getTotalWeight, getTVL } = useContract();
+  const { contract, getPairs, getDailyRewardRate, getUserStakeInfo, getTotalWeight, getTVL, getPendingRewards } = useContract();
 
   const provider = useEthersProvider();
   const signer = useEthersSigner();
@@ -56,7 +56,7 @@ const Home: React.FC = () => {
               if (signer) {
                 const userStake = await getUserStakeInfo(await signer.getAddress(), pair.lpToken);
                 myShare = (Number(ethers.formatEther(userStake.amount)) * 100) / tvl || 0;
-                myEarnings = Number(ethers.formatEther(userStake.pendingRewards)) || 0;
+                myEarnings = await getPendingRewards(await signer.getAddress(), pair.lpToken);
               }
 
               return {
@@ -147,7 +147,7 @@ const Home: React.FC = () => {
                 </TableCell>
                 <TableCell>
                   <Button onClick={() => handleShareClick(pair)} color="primary" disabled={!signer}>
-                    {pair.myEarnings.toFixed(2)} LIB
+                    {pair.myEarnings.toFixed(4)} LIB
                   </Button>
                 </TableCell>
               </TableRow>

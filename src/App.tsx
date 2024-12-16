@@ -1,38 +1,42 @@
 import { RouterProvider } from 'react-router-dom';
 import router from './router';
-import { RainbowKitProvider } from '@rainbow-me/rainbowkit';
+import { RainbowKitProvider, darkTheme, lightTheme } from '@rainbow-me/rainbowkit';
 import { WagmiProvider } from 'wagmi';
 import { config } from './configs/wagmi';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import '@rainbow-me/rainbowkit/styles.css';
 import { ContractProvider } from './providers/ContractProvider';
 import { ThemeProvider, createTheme, CssBaseline } from '@mui/material';
+import { useAtom } from 'jotai';
+import { colorModeAtom } from './store/colorMode';
 
 const client = new QueryClient();
 
-const theme = createTheme({
-  palette: {
-    mode: 'light',
-    primary: {
-      main: '#1976d2',
-    },
-    secondary: {
-      main: '#dc004e',
-    },
-  },
-  typography: {
-    fontFamily: '"Exo", "Helvetica", "Arial", sans-serif',
-    fontSize: 15
-  },
-});
-
 const App: React.FC = () => {
+  const [colorMode] = useAtom(colorModeAtom);
+
+  const theme = createTheme({
+    palette: {
+      mode: colorMode,
+      primary: {
+        main: '#1976d2',
+      },
+      secondary: {
+        main: '#dc004e',
+      },
+    },
+    typography: {
+      fontFamily: '"Exo", "Helvetica", "Arial", sans-serif',
+      fontSize: 15
+    },
+  });
+
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <WagmiProvider config={config}>
         <QueryClientProvider client={client}>
-          <RainbowKitProvider>
+          <RainbowKitProvider theme={colorMode === 'light' ? lightTheme() : darkTheme()}>
             <ContractProvider>
               <RouterProvider router={router} />
             </ContractProvider>
