@@ -96,7 +96,7 @@ const Home: React.FC = () => {
   }, [contract, provider, signer]);
 
   const handlePairClick = (pairAddress: string) => {
-    window.open(`https://app.uniswap.org/#/add/v2/${pairAddress}`, '_blank');
+    window.open(`https://app.uniswap.org/explore/pools/polygon/${pairAddress}`, '_blank');
   };
 
   const handleShareClick = (pair: PairInfo) => {
