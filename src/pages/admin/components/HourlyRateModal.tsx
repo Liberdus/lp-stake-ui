@@ -1,4 +1,4 @@
-import { ModalBox } from '@/components/ModalBox';
+import ModalBox from '@/components/ModalBox';
 import { useContract } from '@/providers/ContractProvider';
 import { Modal, Box, Typography, TextField, Button, CardContent, CardActions, Card } from '@mui/material';
 import { useState } from 'react';

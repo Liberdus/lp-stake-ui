@@ -1,12 +1,14 @@
 import { Box } from '@mui/material';
+import { forwardRef } from 'react';
 
 interface ModalBoxProps {
   children: React.ReactNode;
 }
 
-export const ModalBox: React.FC<ModalBoxProps> = ({ children }) => {
+const ModalBox = forwardRef<HTMLDivElement, ModalBoxProps>(({ children }, ref) => {
   return (
     <Box
+      ref={ref}
       sx={{
         position: 'absolute',
         top: '50%',
@@ -23,4 +25,6 @@ export const ModalBox: React.FC<ModalBoxProps> = ({ children }) => {
       {children}
     </Box>
   );
-};
+});
+
+export default ModalBox;

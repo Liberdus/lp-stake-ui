@@ -1,7 +1,7 @@
 import { Button, CardActions, Card, TextField, CardContent, Modal, Typography } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { useContract } from '@/providers/ContractProvider';
-import { ModalBox } from '@/components/ModalBox';
+import ModalBox from '@/components/ModalBox';
 import { ethers } from 'ethers';
 
 const REWARD_TOKEN_ADDRESS = import.meta.env.VITE_REWARD_TOKEN_ADDRESS;

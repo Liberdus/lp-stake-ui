@@ -1,4 +1,4 @@
-import { ModalBox } from '@/components/ModalBox';
+import ModalBox from '@/components/ModalBox';
 import useNotification from '@/hooks/useNotification';
 import { useContract } from '@/providers/ContractProvider';
 import { Box, Button, Card, CardActions, CardContent, Modal, TextField, Typography } from '@mui/material';
