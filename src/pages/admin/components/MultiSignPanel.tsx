@@ -29,8 +29,10 @@ import CancelIcon from '@mui/icons-material/Cancel';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import PlayCircleIcon from '@mui/icons-material/PlayCircle';
+import { useAtom } from 'jotai';
+import { refetchAtom } from '@/store/refetch';
 
-const ACTION_TYPE = ['SET_HOURLY_REWARD_RATE', 'UPDATE_PAIR_WEIGHTS', 'ADD_PAIR', 'REMOVE_PAIR', 'CHANGE_SIGNER'];
+const ACTION_TYPE = ['SET_HOURLY_REWARD_RATE', 'UPDATE_PAIR_WEIGHTS', 'ADD_PAIR', 'REMOVE_PAIR', 'CHANGE_SIGNER', 'WITHDRAW_REWARDS'];
 
 interface MultiSignPanelProps {}
 
@@ -40,7 +42,7 @@ const MultiSignPanel: React.FC<MultiSignPanelProps> = () => {
   const [proposals, setProposals] = useState<Action[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set());
-
+  const [refetch, setRefetch] = useAtom(refetchAtom);
   const { approveAction, executeAction, getActionCounter, getRequiredApprovals, getActions } = useContract();
   const { showNotification } = useNotification();
 
@@ -61,12 +63,17 @@ const MultiSignPanel: React.FC<MultiSignPanelProps> = () => {
       console.error('Error loading contract data:', error);
     } finally {
       setIsLoading(false);
+      setRefetch(false);
     }
   }
 
   useEffect(() => {
     loadContractData();
   }, []);
+
+  useEffect(() => {
+    if (refetch) loadContractData();
+  }, [refetch]);
 
   const handleApproveAction = async (id: number) => {
     try {

@@ -1,10 +1,12 @@
 import { useEthersSigner } from '@/hooks/useEthersSigner';
 import { useContract } from '@/providers/ContractProvider';
+import { refetchAtom } from '@/store/refetch';
 import { PairInfo, TokenInfo } from '@/types';
 import { Button } from '@mui/material';
 import { Box, Typography, Slider, Stack, DialogContent, Tab } from '@mui/material';
 import { Dialog, Tabs } from '@mui/material';
 import { ethers } from 'ethers';
+import { useAtom } from 'jotai';
 import { SetStateAction, useEffect, useState } from 'react';
 
 interface StakingModalProps {
@@ -20,7 +22,7 @@ const StakingModal: React.FC<StakingModalProps> = ({ selectedPair, isModalOpen, 
   const [balance, setBalance] = useState<number>(0);
   const [tokenInfo, setTokenInfo] = useState<TokenInfo | null>(null);
   const [pendingRewards, setPendingRewards] = useState<number>(0);
-
+  const [,setRefetch] = useAtom(refetchAtom)
   const { stake, unstake, claimRewards, getTokenInfo, getERC20Balance, getPendingRewards } = useContract();
   const signer = useEthersSigner();
   
@@ -29,6 +31,7 @@ const StakingModal: React.FC<StakingModalProps> = ({ selectedPair, isModalOpen, 
     try {
       await stake(selectedPair.lpToken, (stakePercent * balance / 100).toString());
       setIsModalOpen(false);
+      setRefetch(true)
     } catch (error) {
       console.error('Error staking:', error);
     }
@@ -39,6 +42,7 @@ const StakingModal: React.FC<StakingModalProps> = ({ selectedPair, isModalOpen, 
     try {
       await unstake(selectedPair.lpToken, (unstakePercent * selectedPair.myShare * selectedPair.tvl / 10000).toString());
       setIsModalOpen(false);
+      setRefetch(true)
     } catch (error) {
       console.error('Error unstaking:', error);
     }
@@ -49,6 +53,7 @@ const StakingModal: React.FC<StakingModalProps> = ({ selectedPair, isModalOpen, 
     try {
       await claimRewards(selectedPair.lpToken);
       setIsModalOpen(false);
+      setRefetch(true)
     } catch (error) {
       console.error('Error withdrawing:', error);
     }

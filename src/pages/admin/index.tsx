@@ -10,10 +10,12 @@ import HourlyRateModal from './components/HourlyRateModal';
 import ChangeSignerModal from './components/ChangeSignerModal';
 import AddPairModal from './components/AddPairModal';
 import WithdrawalModal from './components/WithdrawalModal';
+import { refetchAtom } from '@/store/refetch';
 
 const Admin: React.FC = () => {
   const navigate = useNavigate();
   const [userInfo] = useAtom(userInfoAtom);
+  const [, setRefetch] = useAtom(refetchAtom);
   const [modalOpen, setModalOpen] = useState<number>(0);
 
   useEffect(() => {
@@ -28,6 +30,7 @@ const Admin: React.FC = () => {
 
   const onClose = () => {
     setModalOpen(0);
+    setRefetch(true);
   };
 
   return (
