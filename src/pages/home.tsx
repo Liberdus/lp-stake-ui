@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { userInfoAtom } from '@/store/userInfo';
-import { useAtom } from 'jotai';
+import { useAtom, useAtomValue } from 'jotai';
 import { useEthersSigner } from '@/hooks/useEthersSigner';
 import { useEthersProvider } from '@/hooks/useEthersProvider';
 import { useContract } from '@/providers/ContractProvider';
@@ -10,8 +10,7 @@ import { PairInfo, SCPairData } from '@/types';
 import StakingModal from '@/components/StakingModal';
 import SimpleAlert from '@/components/SimpleAlert';
 import { calcAPR, fetchTokenPrice } from '@/utils';
-
-const REWARD_TOKEN_ADDRESS = import.meta.env.VITE_REWARD_TOKEN_ADDRESS;
+import { rewardTokenAtom } from '@/store/rewardToken';
 
 const Home: React.FC = () => {
   const [userInfo, setUserInfo] = useAtom(userInfoAtom);
@@ -20,7 +19,7 @@ const Home: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedPair, setSelectedPair] = useState<PairInfo | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-
+  const rewardToken = useAtomValue(rewardTokenAtom);
   const { contract, getPairs, getHourlyRewardRate, getUserStakeInfo, getTVL, getPendingRewards } = useContract();
 
   const provider = useEthersProvider();
@@ -53,7 +52,7 @@ const Home: React.FC = () => {
               let myEarnings = 0;
 
               const lpTokenPrice = await fetchTokenPrice(pair.lpToken);
-              const rewardTokenPrice = await fetchTokenPrice(REWARD_TOKEN_ADDRESS);
+              const rewardTokenPrice = await fetchTokenPrice(rewardToken.address);
 
               const apr = calcAPR(Number(ethers.formatEther(hourlyRate)), Number(ethers.formatEther(await getTVL(pair.lpToken))), lpTokenPrice, rewardTokenPrice);
               const tvl = Number(ethers.formatEther(await getTVL(pair.lpToken)));

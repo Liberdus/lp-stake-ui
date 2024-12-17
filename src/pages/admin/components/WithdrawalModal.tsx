@@ -3,8 +3,8 @@ import { useEffect, useState } from 'react';
 import { useContract } from '@/providers/ContractProvider';
 import ModalBox from '@/components/ModalBox';
 import { ethers } from 'ethers';
-
-const REWARD_TOKEN_ADDRESS = import.meta.env.VITE_REWARD_TOKEN_ADDRESS;
+import { rewardTokenAtom } from '@/store/rewardToken';
+import { useAtomValue } from 'jotai';
 
 interface WithdrawalModalProps {
   open: boolean;
@@ -15,15 +15,15 @@ const WithdrawalModal: React.FC<WithdrawalModalProps> = ({ open, onClose }) => {
   const [recipient, setRecipient] = useState<string>('');
   const [withdrawAmount, setWithdrawAmount] = useState<string>('');
   const [balance, setBalance] = useState<number>(0);
-  const { contract, proposeWithdrawRewards, getERC20Balance, getTokenInfo } = useContract();
+  const rewardToken = useAtomValue(rewardTokenAtom);
+  const { contract, proposeWithdrawRewards, getERC20Balance } = useContract();
 
   useEffect(() => {
     const fetchBalance = async () => {
       if (!contract) return;
-      const balance = await getERC20Balance(await contract.getAddress(), REWARD_TOKEN_ADDRESS);
-      const tokenInfo = await getTokenInfo(REWARD_TOKEN_ADDRESS);
+      const balance = await getERC20Balance(await contract.getAddress(), rewardToken.address);
 
-      setBalance(Number(ethers.formatUnits(balance, tokenInfo.decimals)));
+      setBalance(Number(ethers.formatUnits(balance, rewardToken.decimals)));
     };
     fetchBalance();
   }, [contract]);
