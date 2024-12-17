@@ -43,7 +43,7 @@ const Admin: React.FC = () => {
           </Grid>
           <Grid item xs={12} md={3}>
             <Typography variant="h5" gutterBottom>
-              Settings
+              New Proposal
             </Typography>
             <Stack direction="column" spacing={2}>
               <Button variant="contained" color="primary" onClick={() => setOpenHourlyRateModal(true)}>

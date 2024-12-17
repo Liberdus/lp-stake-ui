@@ -1,6 +1,7 @@
 import { Button, CardActions, Card, TextField, CardContent, Modal, Typography } from '@mui/material';
 import { useState } from 'react';
 import { useContract } from '@/providers/ContractProvider';
+import { ModalBox } from '@/components/ModalBox';
 
 interface WithdrawalModalProps {
   open: boolean;
@@ -19,9 +20,10 @@ const WithdrawalModal: React.FC<WithdrawalModalProps> = ({ open, onClose }) => {
 
   return (
     <Modal open={open} onClose={onClose}>
-      <Card>
-        <CardContent>
-          <Typography variant="h5" gutterBottom>
+      <ModalBox>
+        <Card>
+          <CardContent>
+            <Typography variant="h5" gutterBottom>
             Withdrawal
           </Typography>
           <TextField fullWidth value={recipient} onChange={(e) => setRecipient(e.target.value)} placeholder="Recipient Address" margin="normal" />
@@ -32,7 +34,8 @@ const WithdrawalModal: React.FC<WithdrawalModalProps> = ({ open, onClose }) => {
             Propose Withdrawal
           </Button>
         </CardActions>
-      </Card>
+        </Card>
+      </ModalBox>
     </Modal>
   );
 };
