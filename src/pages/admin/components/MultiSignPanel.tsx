@@ -2,14 +2,32 @@ import useNotification from '@/hooks/useNotification';
 import { useContract } from '@/providers/ContractProvider';
 import { Action } from '@/types';
 import { truncateAddress } from '@/utils';
-import { Box, Card, CardContent, CircularProgress, Collapse, Divider, Grid, IconButton, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from '@mui/material';
-import Button from '@mui/material/Button';
+import {
+  Box,
+  Card,
+  CardContent,
+  CircularProgress,
+  Collapse,
+  Divider,
+  Grid,
+  IconButton,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Tooltip,
+  Typography,
+} from '@mui/material';
 import { ethers } from 'ethers';
 import { useEffect, useState } from 'react';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
+import PlayCircleIcon from '@mui/icons-material/PlayCircle';
 
 const ACTION_TYPE = ['SET_HOURLY_REWARD_RATE', 'UPDATE_PAIR_WEIGHTS', 'ADD_PAIR', 'REMOVE_PAIR', 'CHANGE_SIGNER'];
 
@@ -25,27 +43,28 @@ const MultiSignPanel: React.FC<MultiSignPanelProps> = () => {
   const { contract, approveAction, executeAction } = useContract();
   const { showNotification } = useNotification();
 
-  useEffect(() => {
-    async function loadContractData() {
-      if (!contract) return;
-      setIsLoading(true);
-      try {
-        const counter = await contract.actionCounter();
-        const approvals = await contract.REQUIRED_APPROVALS();
-        let tmpProposals: Action[] = [];
-        for (let i = 1n; i <= counter; i++) {
-          const proposal = await contract.actions(i);
-          tmpProposals.push(proposal);
-        }
-        setProposals(tmpProposals);
-        setActionCounter(counter);
-        setRequiredApprovals(approvals);
-      } catch (error) {
-        console.error('Error loading contract data:', error);
-      } finally {
-        setIsLoading(false);
+  async function loadContractData() {
+    if (!contract) return;
+    setIsLoading(true);
+    try {
+      const counter = await contract.actionCounter();
+      const approvals = await contract.REQUIRED_APPROVALS();
+      let tmpProposals: Action[] = [];
+      for (let i = 1n; i <= counter; i++) {
+        const proposal = await contract.actions(i);
+        tmpProposals.push(proposal);
       }
+      setProposals(tmpProposals);
+      setActionCounter(counter);
+      setRequiredApprovals(approvals);
+    } catch (error) {
+      console.error('Error loading contract data:', error);
+    } finally {
+      setIsLoading(false);
     }
+  }
+
+  useEffect(() => {
     loadContractData();
   }, [contract]);
 
@@ -149,12 +168,16 @@ const MultiSignPanel: React.FC<MultiSignPanelProps> = () => {
                           <Box sx={{ display: 'flex', gap: 1 }}>
                             {!isExecuted && (
                               <>
-                                <Button variant="outlined" color="primary" onClick={() => handleApproveAction(actionId)}>
-                                  Approve
-                                </Button>
-                                <Button variant="contained" color="secondary" onClick={() => handleExecuteAction(actionId)} disabled={!canExecute}>
-                                  Execute
-                                </Button>
+                                <Tooltip title="Approve">
+                                  <IconButton color="primary" onClick={() => handleApproveAction(actionId)}>
+                                    <CheckCircleIcon />
+                                  </IconButton>
+                                </Tooltip>
+                                <Tooltip title="Execute">
+                                  <IconButton color="secondary" onClick={() => handleExecuteAction(actionId)} disabled={!canExecute}>
+                                    <PlayCircleIcon />
+                                  </IconButton>
+                                </Tooltip>
                               </>
                             )}
                           </Box>

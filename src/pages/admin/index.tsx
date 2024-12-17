@@ -14,12 +14,7 @@ import WithdrawalModal from './components/WithdrawalModal';
 const Admin: React.FC = () => {
   const navigate = useNavigate();
   const [userInfo] = useAtom(userInfoAtom);
-  const [openHourlyRateModal, setOpenHourlyRateModal] = useState(false);
-  const [openUpdatePairWeightModal, setOpenUpdatePairWeightModal] = useState(false);
-  const [openChangeSignerModal, setOpenChangeSignerModal] = useState(false);
-  const [openRemovePairModal, setOpenRemovePairModal] = useState(false);
-  const [openAddPairModal, setOpenAddPairModal] = useState(false);
-  const [openWithdrawalModal, setOpenWithdrawalModal] = useState(false);
+  const [modalOpen, setModalOpen] = useState<number>(0);
 
   useEffect(() => {
     if (!userInfo.isAdmin) {
@@ -30,6 +25,10 @@ const Admin: React.FC = () => {
   if (!userInfo.isAdmin) {
     return null;
   }
+
+  const onClose = () => {
+    setModalOpen(0);
+  };
 
   return (
     <>
@@ -46,34 +45,34 @@ const Admin: React.FC = () => {
               New Proposal
             </Typography>
             <Stack direction="column" spacing={2}>
-              <Button variant="contained" color="primary" onClick={() => setOpenHourlyRateModal(true)}>
+              <Button variant="contained" color="primary" onClick={() => setModalOpen(1)}>
                 Update Hourly Rate
               </Button>
-              <Button variant="contained" color="primary" onClick={() => setOpenAddPairModal(true)}>
+              <Button variant="contained" color="primary" onClick={() => setModalOpen(2)}>
                 Add Pair
               </Button>
-              <Button variant="contained" color="primary" onClick={() => setOpenRemovePairModal(true)}>
+              <Button variant="contained" color="primary" onClick={() => setModalOpen(3)}>
                 Remove Pair
               </Button>
-              <Button variant="contained" color="primary" onClick={() => setOpenUpdatePairWeightModal(true)}>
+              <Button variant="contained" color="primary" onClick={() => setModalOpen(4)}>
                 Update Pair Weight
               </Button>
-              <Button variant="contained" color="primary" onClick={() => setOpenChangeSignerModal(true)}>
+              <Button variant="contained" color="primary" onClick={() => setModalOpen(5)}>
                 Change Signer
               </Button>
-              <Button variant="contained" color="primary" onClick={() => setOpenWithdrawalModal(true)}>
+              <Button variant="contained" color="primary" onClick={() => setModalOpen(6)}>
                 Withdraw Rewards
               </Button>
             </Stack>
           </Grid>
         </Grid>
       </Container>
-      <AddPairModal open={openAddPairModal} onClose={() => setOpenAddPairModal(false)} />
-      <HourlyRateModal open={openHourlyRateModal} onClose={() => setOpenHourlyRateModal(false)} />
-      <UpdatePairWeightModal open={openUpdatePairWeightModal} onClose={() => setOpenUpdatePairWeightModal(false)} />
-      <ChangeSignerModal open={openChangeSignerModal} onClose={() => setOpenChangeSignerModal(false)} />
-      <RemovePairModal open={openRemovePairModal} onClose={() => setOpenRemovePairModal(false)} />
-      <WithdrawalModal open={openWithdrawalModal} onClose={() => setOpenWithdrawalModal(false)} />
+      <HourlyRateModal open={modalOpen === 1} onClose={onClose} />
+      <AddPairModal open={modalOpen === 2} onClose={onClose} />
+      <RemovePairModal open={modalOpen === 3} onClose={onClose} />
+      <UpdatePairWeightModal open={modalOpen === 4} onClose={onClose} />
+      <ChangeSignerModal open={modalOpen === 5} onClose={onClose} />
+      <WithdrawalModal open={modalOpen === 6} onClose={onClose} />
     </>
   );
 };

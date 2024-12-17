@@ -64,6 +64,7 @@ const UpdatePairWeightModal: React.FC<UpdatePairWeightModalProps> = ({ open, onC
       showNotification('error', error?.data?.data?.message || 'Error proposing weight updates');
       console.error('Error proposing weight updates:', error);
     }
+    onClose();
   };
 
   return (

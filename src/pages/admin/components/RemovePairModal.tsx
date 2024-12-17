@@ -29,6 +29,7 @@ const RemovePairModal: React.FC<RemovePairModalProps> = ({ open, onClose }) => {
         console.error('Error proposing pair removal:', error);
       }
     }
+    onClose();
   };
 
   return (

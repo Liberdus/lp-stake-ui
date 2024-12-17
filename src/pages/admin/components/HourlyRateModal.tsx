@@ -21,6 +21,7 @@ const HourlyRateModal: React.FC<HourlyRateModalProps> = ({ open, onClose }) => {
         console.error('Error proposing hourly rate:', error);
       }
     }
+    onClose();
   };
 
   return (

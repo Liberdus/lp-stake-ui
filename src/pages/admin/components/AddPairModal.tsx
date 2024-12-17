@@ -57,6 +57,7 @@ const AddPairModal: React.FC<AddPairModalProps> = ({ open, onClose }) => {
         console.error('Error proposing new pair:', error);
       }
     }
+    onClose();
   };
 
   return (
