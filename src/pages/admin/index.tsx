@@ -9,6 +9,7 @@ import RemovePairModal from './components/RemovePairModal';
 import HourlyRateModal from './components/HourlyRateModal';
 import ChangeSignerModal from './components/ChangeSignerModal';
 import AddPairModal from './components/AddPairModal';
+import WithdrawalModal from './components/WithdrawalModal';
 
 const Admin: React.FC = () => {
   const navigate = useNavigate();
@@ -18,6 +19,7 @@ const Admin: React.FC = () => {
   const [openChangeSignerModal, setOpenChangeSignerModal] = useState(false);
   const [openRemovePairModal, setOpenRemovePairModal] = useState(false);
   const [openAddPairModal, setOpenAddPairModal] = useState(false);
+  const [openWithdrawalModal, setOpenWithdrawalModal] = useState(false);
 
   useEffect(() => {
     if (!userInfo.isAdmin) {
@@ -40,6 +42,9 @@ const Admin: React.FC = () => {
             <MultiSignPanel />
           </Grid>
           <Grid item xs={12} md={3}>
+            <Typography variant="h5" gutterBottom>
+              Settings
+            </Typography>
             <Stack direction="column" spacing={2}>
               <Button variant="contained" color="primary" onClick={() => setOpenHourlyRateModal(true)}>
                 Update Hourly Rate
@@ -56,6 +61,9 @@ const Admin: React.FC = () => {
               <Button variant="contained" color="primary" onClick={() => setOpenChangeSignerModal(true)}>
                 Change Signer
               </Button>
+              <Button variant="contained" color="primary" onClick={() => setOpenWithdrawalModal(true)}>
+                Withdraw Rewards
+              </Button>
             </Stack>
           </Grid>
         </Grid>
@@ -65,6 +73,7 @@ const Admin: React.FC = () => {
       <UpdatePairWeightModal open={openUpdatePairWeightModal} onClose={() => setOpenUpdatePairWeightModal(false)} />
       <ChangeSignerModal open={openChangeSignerModal} onClose={() => setOpenChangeSignerModal(false)} />
       <RemovePairModal open={openRemovePairModal} onClose={() => setOpenRemovePairModal(false)} />
+      <WithdrawalModal open={openWithdrawalModal} onClose={() => setOpenWithdrawalModal(false)} />
     </>
   );
 };

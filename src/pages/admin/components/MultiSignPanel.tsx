@@ -93,7 +93,7 @@ const MultiSignPanel: React.FC<MultiSignPanelProps> = () => {
     <Card>
       <CardContent>
         <Typography variant="h5" gutterBottom>
-          Total Proposals
+          Proposals Panel
         </Typography>
 
         <Box sx={{ mb: 2, textAlign: 'right' }}>

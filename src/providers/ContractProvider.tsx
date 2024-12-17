@@ -9,7 +9,6 @@ import { SCPairData, TokenInfo } from '@/types';
 import { useAtom } from 'jotai';
 import { rewardTokenAtom } from '@/store/rewardToken';
 import ERC20_ABI from '@/assets/abi/ERC20.json';
-import { notificationAtom } from '@/store/notification';
 import { ContractEvent } from '@/types';
 import useNotification from '@/hooks/useNotification';
 import useAlert from '@/hooks/useAlert';
@@ -32,6 +31,7 @@ interface ContractContextType {
   proposeAddPair: (lpToken: string, pairName: string, platform: string, weight: string) => Promise<void>;
   proposeRemovePair: (lpToken: string) => Promise<void>;
   proposeChangeSigner: (oldSigner: string, newSigner: string) => Promise<void>;
+  proposeWithdrawRewards: (recipient: string, amount: string) => Promise<void>;
   approveAction: (actionId: number) => Promise<void>;
   executeAction: (actionId: number) => Promise<void>;
 
@@ -83,6 +83,7 @@ const ContractContext = createContext<ContractContextType>({
   proposeAddPair: async () => {},
   proposeRemovePair: async () => {},
   proposeChangeSigner: async () => {},
+  proposeWithdrawRewards: async () => {},
   approveAction: async () => {},
   executeAction: async () => {},
   getPendingRewards: async () => 0,
@@ -299,6 +300,17 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
     }
   };
 
+  const proposeWithdrawRewards = async (recipient: string, amount: string) => {
+    if (!contract) throw new Error('Contract not initialized');
+    try {
+      const tx = await contract.proposeWithdrawRewards(recipient, ethers.parseUnits(amount, rewardToken.decimals));
+      await tx.wait();
+    } catch (err) {
+      console.log(err);
+      setError(new Error('Failed to propose withdraw rewards'));
+    }
+  };
+
   const approveAction = async (actionId: number) => {
     if (!contract) throw new Error('Contract not initialized');
     try {
@@ -506,6 +518,7 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
         proposeAddPair,
         proposeRemovePair,
         proposeChangeSigner,
+        proposeWithdrawRewards,
         approveAction,
         executeAction,
         // User info
