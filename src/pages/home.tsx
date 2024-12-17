@@ -20,7 +20,7 @@ const Home: React.FC = () => {
   const [selectedPair, setSelectedPair] = useState<PairInfo | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const rewardToken = useAtomValue(rewardTokenAtom);
-  const { contract, getPairs, getHourlyRewardRate, getUserStakeInfo, getTVL, getPendingRewards } = useContract();
+  const { contract, getPairs, getHourlyRewardRate, getUserStakeInfo, getTVL, getPendingRewards, hasAdminRole } = useContract();
 
   const provider = useEthersProvider();
   const signer = useEthersSigner();
@@ -28,11 +28,10 @@ const Home: React.FC = () => {
   useEffect(() => {
     async function checkAdminRole() {
       if (contract && provider && signer) {
-        const adminRole = await contract.ADMIN_ROLE();
-        const hasAdminRole = await contract.hasRole(adminRole, signer.address);
+        const isAdmin = await hasAdminRole(signer.address);
         setUserInfo({
           ...userInfo,
-          isAdmin: hasAdminRole,
+          isAdmin: isAdmin,
         });
       }
     }
@@ -95,7 +94,7 @@ const Home: React.FC = () => {
       setIsLoading(false);
     }
     fetchData();
-  }, [contract, provider, signer]);
+  }, [contract, provider, signer, rewardToken]);
 
   const handlePairClick = (pairAddress: string) => {
     window.open(`https://app.uniswap.org/explore/pools/polygon/${pairAddress}`, '_blank');

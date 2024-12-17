@@ -16,20 +16,18 @@ const WithdrawalModal: React.FC<WithdrawalModalProps> = ({ open, onClose }) => {
   const [withdrawAmount, setWithdrawAmount] = useState<string>('');
   const [balance, setBalance] = useState<number>(0);
   const rewardToken = useAtomValue(rewardTokenAtom);
-  const { contract, proposeWithdrawRewards, getERC20Balance } = useContract();
+  const { proposeWithdrawRewards, getERC20Balance, getContractAddress } = useContract();
 
   useEffect(() => {
     const fetchBalance = async () => {
-      if (!contract) return;
-      const balance = await getERC20Balance(await contract.getAddress(), rewardToken.address);
+      const balance = await getERC20Balance(await getContractAddress(), rewardToken.address);
 
       setBalance(Number(ethers.formatUnits(balance, rewardToken.decimals)));
     };
     fetchBalance();
-  }, [contract]);
+  }, [getContractAddress]);
 
   const handleProposeWithdrawal = async () => {
-    if (!contract) return;
     await proposeWithdrawRewards(recipient, withdrawAmount);
     onClose();
   };

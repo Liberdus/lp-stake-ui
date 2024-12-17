@@ -10,6 +10,7 @@ import {
   Collapse,
   Divider,
   Grid,
+  Grid2,
   IconButton,
   Paper,
   Table,
@@ -34,24 +35,23 @@ const ACTION_TYPE = ['SET_HOURLY_REWARD_RATE', 'UPDATE_PAIR_WEIGHTS', 'ADD_PAIR'
 interface MultiSignPanelProps {}
 
 const MultiSignPanel: React.FC<MultiSignPanelProps> = () => {
-  const [actionCounter, setActionCounter] = useState<bigint>();
-  const [requiredApprovals, setRequiredApprovals] = useState<bigint>();
+  const [actionCounter, setActionCounter] = useState<number>();
+  const [requiredApprovals, setRequiredApprovals] = useState<number>();
   const [proposals, setProposals] = useState<Action[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set());
 
-  const { contract, approveAction, executeAction } = useContract();
+  const { approveAction, executeAction, getActionCounter, getRequiredApprovals, getActions } = useContract();
   const { showNotification } = useNotification();
 
   async function loadContractData() {
-    if (!contract) return;
     setIsLoading(true);
     try {
-      const counter = await contract.actionCounter();
-      const approvals = await contract.REQUIRED_APPROVALS();
+      const counter = await getActionCounter();
+      const approvals = await getRequiredApprovals();
       let tmpProposals: Action[] = [];
-      for (let i = 1n; i <= counter; i++) {
-        const proposal = await contract.actions(i);
+      for (let i = 1; i <= counter; i++) {
+        const proposal = await getActions(i);
         tmpProposals.push(proposal);
       }
       setProposals(tmpProposals);
@@ -66,17 +66,15 @@ const MultiSignPanel: React.FC<MultiSignPanelProps> = () => {
 
   useEffect(() => {
     loadContractData();
-  }, [contract]);
+  }, []);
 
   const handleApproveAction = async (id: number) => {
     try {
       await approveAction(id);
       showNotification('success', `Action #${id} approved successfully.`);
       // Refresh proposals after action
-      if (contract) {
-        const updatedProposal = await contract.actions(BigInt(id));
-        setProposals((prev) => prev.map((p, idx) => (idx + 1 === id ? updatedProposal : p)));
-      }
+      const updatedProposal = await getActions(id);
+      setProposals((prev) => prev.map((p, idx) => (idx + 1 === id ? updatedProposal : p)));
     } catch (error: any) {
       showNotification('error', error?.data?.data?.message || 'Error approving action');
       console.error('Error approving action:', error);
@@ -88,10 +86,8 @@ const MultiSignPanel: React.FC<MultiSignPanelProps> = () => {
       await executeAction(id);
       showNotification('success', `Action #${id} executed successfully.`);
       // Refresh proposals after action
-      if (contract) {
-        const updatedProposal = await contract.actions(BigInt(id));
-        setProposals((prev) => prev.map((p, idx) => (idx + 1 === id ? updatedProposal : p)));
-      }
+      const updatedProposal = await getActions(id);
+      setProposals((prev) => prev.map((p, idx) => (idx + 1 === id ? updatedProposal : p)));
     } catch (error: any) {
       showNotification('error', error?.data?.data?.message || 'Error executing action');
       console.error('Error executing action:', error);
@@ -191,7 +187,7 @@ const MultiSignPanel: React.FC<MultiSignPanelProps> = () => {
                                 Details:
                               </Typography>
                               <Grid container spacing={1}>
-                                {proposal.newHourlyRewardRate && (
+                                {proposal.newHourlyRewardRate !== 0n && (
                                   <Grid item xs={12}>
                                     <Typography variant="body2">New Hourly Reward Rate: {ethers.formatEther(proposal.newHourlyRewardRate.toString())}</Typography>
                                   </Grid>
@@ -211,7 +207,7 @@ const MultiSignPanel: React.FC<MultiSignPanelProps> = () => {
                                     <Typography variant="body2">Platform: {proposal.platformToAdd}</Typography>
                                   </Grid>
                                 )}
-                                {proposal.weightToAdd && (
+                                {proposal.weightToAdd !== 0n && (
                                   <Grid item xs={12}>
                                     <Typography variant="body2">Weight: {ethers.formatEther(proposal.weightToAdd.toString())}</Typography>
                                   </Grid>

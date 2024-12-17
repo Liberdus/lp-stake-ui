@@ -58,11 +58,15 @@ interface ContractContextType {
   // Contract state
   getHourlyRewardRate: () => Promise<bigint>;
   getTotalWeight: () => Promise<bigint>;
+  getMaxWeight: () => Promise<number>;
+  getRequiredApprovals: () => Promise<number>;
   getRewardToken: () => Promise<string>;
   getSigners: () => Promise<string[]>;
-  getActionCounter: () => Promise<bigint>;
+  getActionCounter: () => Promise<number>;
+  getActions: (actionId: number) => Promise<any>;
   getTVL: (lpToken: string) => Promise<bigint>;
-
+  getContractAddress: () => Promise<string>;
+  hasAdminRole: (address: string) => Promise<boolean>;
   // Token info
   getTokenInfo: (address: string) => Promise<TokenInfo>;
   getERC20Balance: (address: string, tokenAddress: string) => Promise<bigint>;
@@ -91,11 +95,16 @@ const ContractContext = createContext<ContractContextType>({
   getPairInfo: async () => ({ token: '', platform: '', weight: BigInt(0), isActive: false }),
   getPairs: async () => [],
   getHourlyRewardRate: async () => BigInt(0),
+  getContractAddress: async () => '',
+  getMaxWeight: async () => 0,
+  getRequiredApprovals: async () => 0,
   getTotalWeight: async () => BigInt(0),
   getRewardToken: async () => '',
   getSigners: async () => [],
-  getActionCounter: async () => BigInt(0),
+  getActionCounter: async () => 0,
+  getActions: async () => [],
   getTVL: async () => BigInt(0),
+  hasAdminRole: async () => false,
   getTokenInfo: async () => ({ address: '', symbol: '', decimals: 0 }),
   getERC20Balance: async () => BigInt(0),
   getEvents: () => [],
@@ -405,6 +414,62 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
   };
 
   // Contract state
+  const getAdminRole = async () => {
+    if (!contract) throw new Error('Contract not initialized');
+    try {
+      return await contract.ADMIN_ROLE();
+    } catch (err) {
+      console.log(err);
+      setError(new Error('Failed to get admin role'));
+      return '';
+    }
+  };
+
+  const hasAdminRole = async (address: string) => {
+    if (!contract) throw new Error('Contract not initialized');
+    try {
+      const adminRole = await getAdminRole();
+      return await contract.hasRole(adminRole, address);
+    } catch (err) {
+      console.log(err);
+      setError(new Error('Failed to check role'));
+      return false;
+    }
+  };
+
+  const getContractAddress = async () => {
+    if (!contract) throw new Error('Contract not initialized');
+    try {
+      return await contract.getAddress();
+    } catch (err) {
+      console.log(err);
+      setError(new Error('Failed to get contract address'));
+      return '';
+    }
+  };
+
+  const getMaxWeight = async () => {
+    if (!contract) throw new Error('Contract not initialized');
+    try {
+      return Number(ethers.formatEther(await contract.MAX_WEIGHT()));
+    } catch (err) {
+      console.log(err);
+      setError(new Error('Failed to get max weight'));
+      return 0;
+    }
+  };
+
+  const getRequiredApprovals = async () => {
+    if (!contract) throw new Error('Contract not initialized');
+    try {
+      return await contract.REQUIRED_APPROVALS();
+    } catch (err) {
+      console.log(err);
+      setError(new Error('Failed to get required approvals'));
+      return BigInt(0);
+    }
+  };
+
   const getHourlyRewardRate = async () => {
     if (!contract) throw new Error('Contract not initialized');
     try {
@@ -445,6 +510,17 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
     } catch (err) {
       console.log(err);
       setError(new Error('Failed to get signers'));
+      return [];
+    }
+  };
+
+  const getActions = async (actionId: number) => {
+    if (!contract) throw new Error('Contract not initialized');
+    try {
+      return await contract.actions(BigInt(actionId));
+    } catch (err) {
+      console.log(err);
+      setError(new Error('Failed to get actions'));
       return [];
     }
   };
@@ -529,16 +605,21 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
         getPairs,
         // Contract state
         getHourlyRewardRate,
+        getMaxWeight,
+        getRequiredApprovals,
         getTotalWeight,
         getRewardToken,
         getSigners,
         getActionCounter,
+        getActions,
         getTVL,
+        hasAdminRole,
         // Token info
         getTokenInfo,
         getERC20Balance,
         // Events
         getEvents,
+        getContractAddress,
       }}
     >
       {children}

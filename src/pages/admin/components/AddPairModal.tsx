@@ -17,19 +17,16 @@ const AddPairModal: React.FC<AddPairModalProps> = ({ open, onClose }) => {
   const [newPairWeight, setNewPairWeight] = useState<string>('0');
   const [maxWeight, setMaxWeight] = useState<number>();
 
-  const { contract, proposeAddPair } = useContract();
+  const { proposeAddPair, getMaxWeight } = useContract();
   const { showNotification } = useNotification();
 
   useEffect(() => {
     async function loadContractData() {
-      if (contract) {
-        const maxWeight = await contract.MAX_WEIGHT();
-
-        setMaxWeight(maxWeight);
-      }
+      const maxWeight = await getMaxWeight();
+      setMaxWeight(Number(maxWeight));
     }
     loadContractData();
-  }, [contract]);
+  }, []);
 
   const handleProposeAddPair = async () => {
     if (newPairAddress && newPairPlatform && newPairName && newPairWeight !== '0') {

@@ -16,19 +16,16 @@ const UpdatePairWeightModal: React.FC<UpdatePairWeightModalProps> = ({ open, onC
   const [updatePairWeights, setUpdatePairWeights] = useState<string[]>(['0']);
   const [maxWeight, setMaxWeight] = useState<number>();
 
-  const { contract, proposeUpdatePairWeights } = useContract();
+  const { proposeUpdatePairWeights, getMaxWeight } = useContract();
   const { showNotification } = useNotification();
 
   useEffect(() => {
     async function loadContractData() {
-      if (contract) {
-        const maxWeight = await contract.MAX_WEIGHT();
-
-        setMaxWeight(maxWeight);
-      }
+      const maxWeight = await getMaxWeight();
+      setMaxWeight(Number(maxWeight));
     }
     loadContractData();
-  }, [contract]);
+  }, []);
 
   const handleAddPairWeight = () => {
     setUpdatePairAddresses([...updatePairAddresses, '']);
@@ -103,6 +100,9 @@ const UpdatePairWeightModal: React.FC<UpdatePairWeightModalProps> = ({ open, onC
                 </Button>
               </Box>
             ))}
+            <Typography variant="body2" sx={{ mt: 2, textAlign: 'right' }}>
+              Max Weight: {maxWeight}
+            </Typography>
             <Box sx={{ display: 'flex', gap: 2 }}>
               <Button variant="outlined" onClick={handleAddPairWeight}>
                 Add Pair
