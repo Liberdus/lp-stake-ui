@@ -36,7 +36,7 @@ const Home: React.FC = () => {
       }
     }
     checkAdminRole();
-  }, [contract, provider, userInfo]);
+  }, [contract, provider]);
 
   useEffect(() => {
     async function fetchData() {

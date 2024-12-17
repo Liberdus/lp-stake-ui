@@ -12,5 +12,5 @@ export const fetchTokenPrice = async (address: string) => {
   if (!address) return 0;
   const response = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${address}`);
   const data = await response.json();
-  return data.pairs?.[0]?.priceUsd;
+  return data.pairs?.[0]?.priceUsd || 0;
 };

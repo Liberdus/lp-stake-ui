@@ -31,10 +31,8 @@ const AddPairModal: React.FC<AddPairModalProps> = ({ open, onClose }) => {
   const handleProposeAddPair = async () => {
     if (newPairAddress && newPairPlatform && newPairName && newPairWeight !== '0') {
       try {
-        console.log(maxWeight);
-
-        if (maxWeight && ethers.parseEther(newPairWeight) > maxWeight) {
-          alert(`Weight cannot be greater than ${ethers.formatEther(maxWeight)}`);
+        if (maxWeight && Number(newPairWeight) > maxWeight) {
+          alert(`Weight cannot be greater than ${maxWeight}`);
           return;
         }
 
