@@ -15,11 +15,7 @@ const HourlyRateModal: React.FC<HourlyRateModalProps> = ({ open, onClose }) => {
 
   const handleProposeHourlyRate = async () => {
     if (newHourlyRate !== '0') {
-      try {
-        await proposeSetHourlyRewardRate(newHourlyRate);
-      } catch (error) {
-        console.error('Error proposing hourly rate:', error);
-      }
+      await proposeSetHourlyRewardRate(newHourlyRate);
     }
     onClose();
   };

@@ -22,41 +22,29 @@ const StakingModal: React.FC<StakingModalProps> = ({ selectedPair, isModalOpen, 
   const [balance, setBalance] = useState<number>(0);
   const [tokenInfo, setTokenInfo] = useState<TokenInfo | null>(null);
   const [pendingRewards, setPendingRewards] = useState<number>(0);
-  const [,setRefetch] = useAtom(refetchAtom)
+  const [, setRefetch] = useAtom(refetchAtom);
   const { stake, unstake, claimRewards, getTokenInfo, getERC20Balance, getPendingRewards } = useContract();
   const signer = useEthersSigner();
-  
+
   const handleStake = async () => {
     if (!selectedPair || stakePercent === 0) return;
-    try {
-      await stake(selectedPair.lpToken, (stakePercent * balance / 100).toString());
-      setIsModalOpen(false);
-      setRefetch(true)
-    } catch (error) {
-      console.error('Error staking:', error);
-    }
+    await stake(selectedPair.lpToken, ((stakePercent * balance) / 100).toString());
+    setIsModalOpen(false);
+    setRefetch(true);
   };
 
   const handleUnstake = async () => {
     if (!selectedPair || unstakePercent === 0) return;
-    try {
-      await unstake(selectedPair.lpToken, (unstakePercent * selectedPair.myShare * selectedPair.tvl / 10000).toString());
-      setIsModalOpen(false);
-      setRefetch(true)
-    } catch (error) {
-      console.error('Error unstaking:', error);
-    }
+    await unstake(selectedPair.lpToken, ((unstakePercent * selectedPair.myShare * selectedPair.tvl) / 10000).toString());
+    setIsModalOpen(false);
+    setRefetch(true);
   };
 
   const handleWithdraw = async () => {
     if (!selectedPair) return;
-    try {
-      await claimRewards(selectedPair.lpToken);
-      setIsModalOpen(false);
-      setRefetch(true)
-    } catch (error) {
-      console.error('Error withdrawing:', error);
-    }
+    await claimRewards(selectedPair.lpToken);
+    setIsModalOpen(false);
+    setRefetch(true);
   };
 
   useEffect(() => {
@@ -68,7 +56,6 @@ const StakingModal: React.FC<StakingModalProps> = ({ selectedPair, isModalOpen, 
       setTokenInfo(tokenInfo);
       setBalance(Number(ethers.formatUnits(tokenBalanceOfSigner, tokenInfo.decimals)));
       setPendingRewards(pendingRewards);
-      console.log(pendingRewards);
     }
     fetchData();
   }, [selectedPair, signer]);
@@ -89,7 +76,9 @@ const StakingModal: React.FC<StakingModalProps> = ({ selectedPair, isModalOpen, 
             <Stack spacing={3}>
               <Slider value={stakePercent} onChange={(_: any, value: number | number[]) => setStakePercent(value as number)} valueLabelDisplay="auto" />
               <Box className="flex justify-between">
-                <Typography>Stake {stakePercent}% ({stakePercent * balance / 100} {tokenInfo?.symbol})</Typography>
+                <Typography>
+                  Stake {stakePercent}% ({(stakePercent * balance) / 100} {tokenInfo?.symbol})
+                </Typography>
                 <Typography>
                   Balance: {balance.toFixed(4)} {tokenInfo?.symbol}
                 </Typography>
@@ -103,7 +92,9 @@ const StakingModal: React.FC<StakingModalProps> = ({ selectedPair, isModalOpen, 
           {tabValue === 1 && (
             <Stack spacing={3}>
               <Slider value={unstakePercent} onChange={(_: any, value: number | number[]) => setUnstakePercent(value as number)} valueLabelDisplay="auto" />
-              <Typography>Unstake {unstakePercent}% ({(unstakePercent * selectedPair?.myShare * selectedPair?.tvl / 10000).toFixed(2)} {tokenInfo?.symbol})</Typography>
+              <Typography>
+                Unstake {unstakePercent}% ({((unstakePercent * selectedPair?.myShare * selectedPair?.tvl) / 10000).toFixed(2)} {tokenInfo?.symbol})
+              </Typography>
               <Button variant="contained" onClick={handleUnstake} fullWidth>
                 Unstake
               </Button>

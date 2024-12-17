@@ -30,27 +30,19 @@ const AddPairModal: React.FC<AddPairModalProps> = ({ open, onClose }) => {
 
   const handleProposeAddPair = async () => {
     if (newPairAddress && newPairPlatform && newPairName && newPairWeight !== '0') {
-      try {
-        if (maxWeight && Number(newPairWeight) > maxWeight) {
-          alert(`Weight cannot be greater than ${maxWeight}`);
-          return;
-        }
-
-        if (!ethers.isAddress(newPairAddress)) {
-          alert('Invalid LP token address format');
-          return;
-        }
-
-        if (new TextEncoder().encode(newPairPlatform).length > 32) {
-          alert('Platform name too long (max 32 bytes)');
-          return;
-        }
-
-        await proposeAddPair(newPairAddress, newPairName, newPairPlatform, newPairWeight);
-      } catch (error: any) {
-        showNotification('error', error?.data?.data?.message || 'Error proposing new pair');
-        console.error('Error proposing new pair:', error);
+      if (maxWeight && Number(newPairWeight) > maxWeight) {
+        alert(`Weight cannot be greater than ${maxWeight}`);
+        return;
       }
+      if (!ethers.isAddress(newPairAddress)) {
+        alert('Invalid LP token address format');
+        return;
+      }
+      if (new TextEncoder().encode(newPairPlatform).length > 32) {
+        alert('Platform name too long (max 32 bytes)');
+        return;
+      }
+      await proposeAddPair(newPairAddress, newPairName, newPairPlatform, newPairWeight);
     }
     onClose();
   };

@@ -17,17 +17,11 @@ const RemovePairModal: React.FC<RemovePairModalProps> = ({ open, onClose }) => {
 
   const handleProposeRemovePair = async () => {
     if (removePairAddress) {
-      try {
-        if (!ethers.isAddress(removePairAddress)) {
-          alert('Invalid LP token address format');
-          return;
-        }
-
-        await proposeRemovePair(removePairAddress);
-      } catch (error: any) {
-        showNotification('error', error?.data?.data?.message || 'Error proposing pair removal');
-        console.error('Error proposing pair removal:', error);
+      if (!ethers.isAddress(removePairAddress)) {
+        alert('Invalid LP token address format');
+        return;
       }
+      await proposeRemovePair(removePairAddress);
     }
     onClose();
   };

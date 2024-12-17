@@ -130,7 +130,10 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
   const signer = useEthersSigner();
 
   useEffect(() => {
-    showNotification('error', error?.message || '');
+    if (error !== null) {
+      showNotification('error', error?.message || '');
+      setError(null)
+    }
   }, [JSON.stringify(error)]);
 
   useEffect(() => {
@@ -286,7 +289,7 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
       setError(new Error('Failed to propose add pair'));
     }
   };
-  
+
   const proposeRemovePair = async (lpToken: string) => {
     if (!contract) throw new Error('Contract not initialized');
     try {
@@ -349,7 +352,6 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
     const pairInfo = await contract.getPairInfo(lpTokenAddress);
     const userStakeInfo = await getUserStakeInfo(userAddress, lpTokenAddress);
 
-    
     const pairWeight = Number(ethers.formatEther(pairInfo.weight));
     const userStakeAmount = Number(ethers.formatEther(userStakeInfo.amount));
     const lastRewardTime = Number(userStakeInfo.lastRewardTime);
@@ -369,7 +371,7 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
     const availableRewards = pendingRewards + (pairRewards * userStakeAmount) / totalLPSupply;
 
     return availableRewards;
-  }
+  };
 
   const getPendingRewards = async (userAddress: string, lpToken: string) => {
     if (!contract || !provider || !rewardTokenContract) throw new Error('Contract not initialized');

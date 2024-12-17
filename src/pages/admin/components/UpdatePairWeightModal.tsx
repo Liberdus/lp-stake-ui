@@ -38,29 +38,24 @@ const UpdatePairWeightModal: React.FC<UpdatePairWeightModalProps> = ({ open, onC
   };
 
   const handleProposeUpdateWeights = async () => {
-    try {
-      // Validate addresses
-      const validAddresses = updatePairAddresses.every((addr) => ethers.isAddress(addr));
-      if (!validAddresses) {
-        alert('Invalid LP token address format');
+    // Validate addresses
+    const validAddresses = updatePairAddresses.every((addr) => ethers.isAddress(addr));
+    if (!validAddresses) {
+      alert('Invalid LP token address format');
+      return;
+    }
+
+    // Validate weights
+    if (maxWeight) {
+      const validWeights = updatePairWeights.every((weight) => Number(weight) <= Number(maxWeight) && Number(weight) >= 0);
+
+      if (!validWeights) {
+        alert(`Weights must be between 0 and ${maxWeight}`);
         return;
       }
-
-      // Validate weights
-      if (maxWeight) {
-        const validWeights = updatePairWeights.every((weight) => Number(weight) <= Number(maxWeight) && Number(weight) >= 0);
-
-        if (!validWeights) {
-          alert(`Weights must be between 0 and ${maxWeight}`);
-          return;
-        }
-      }
-
-      await proposeUpdatePairWeights(updatePairAddresses, updatePairWeights);
-    } catch (error: any) {
-      showNotification('error', error?.data?.data?.message || 'Error proposing weight updates');
-      console.error('Error proposing weight updates:', error);
     }
+
+    await proposeUpdatePairWeights(updatePairAddresses, updatePairWeights);
     onClose();
   };
 

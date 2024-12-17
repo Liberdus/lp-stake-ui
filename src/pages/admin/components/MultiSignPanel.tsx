@@ -76,29 +76,16 @@ const MultiSignPanel: React.FC<MultiSignPanelProps> = () => {
   }, [refetch]);
 
   const handleApproveAction = async (id: number) => {
-    try {
-      await approveAction(id);
-      showNotification('success', `Action #${id} approved successfully.`);
-      // Refresh proposals after action
-      const updatedProposal = await getActions(id);
-      setProposals((prev) => prev.map((p, idx) => (idx + 1 === id ? updatedProposal : p)));
-    } catch (error: any) {
-      showNotification('error', error?.data?.data?.message || 'Error approving action');
-      console.error('Error approving action:', error);
-    }
+    await approveAction(id);
+    const updatedProposal = await getActions(id);
+    setProposals((prev) => prev.map((p, idx) => (idx + 1 === id ? updatedProposal : p)));
   };
 
   const handleExecuteAction = async (id: number) => {
-    try {
-      await executeAction(id);
-      showNotification('success', `Action #${id} executed successfully.`);
-      // Refresh proposals after action
-      const updatedProposal = await getActions(id);
-      setProposals((prev) => prev.map((p, idx) => (idx + 1 === id ? updatedProposal : p)));
-    } catch (error: any) {
-      showNotification('error', error?.data?.data?.message || 'Error executing action');
-      console.error('Error executing action:', error);
-    }
+    await executeAction(id);
+    // Refresh proposals after action
+    const updatedProposal = await getActions(id);
+    setProposals((prev) => prev.map((p, idx) => (idx + 1 === id ? updatedProposal : p)));
   };
 
   const toggleRow = (id: number) => {

@@ -19,17 +19,11 @@ const ChangeSignerModal: React.FC<ChangeSignerModalProps> = ({ open, onClose }) 
 
   const handleProposeChangeSigner = async () => {
     if (oldSignerAddress && newSignerAddress) {
-      try {
-        if (!ethers.isAddress(newSignerAddress)) {
-          alert('Invalid signer address format');
-          return;
-        }
-
-        await proposeChangeSigner(oldSignerAddress, newSignerAddress);
-      } catch (error: any) {
-        showNotification('error', error?.data?.data?.message || 'Error proposing signer change');
-        console.error('Error proposing signer change:', error);
+      if (!ethers.isAddress(newSignerAddress)) {
+        alert('Invalid signer address format');
+        return;
       }
+      await proposeChangeSigner(oldSignerAddress, newSignerAddress);
     }
     onClose();
   };
