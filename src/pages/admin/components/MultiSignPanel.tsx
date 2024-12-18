@@ -177,9 +177,9 @@ const MultiSignPanel: React.FC<MultiSignPanelProps> = () => {
                                 Details:
                               </Typography>
                               <Grid container spacing={1}>
-                                {proposal.newHourlyRewardRate !== 0n && (
+                                {proposal?.newHourlyRewardRate !== 0n && (
                                   <Grid item xs={12}>
-                                    <Typography variant="body2">New Hourly Reward Rate: {ethers.formatEther(proposal.newHourlyRewardRate.toString())}</Typography>
+                                    <Typography variant="body2">New Hourly Reward Rate: {ethers.formatEther(proposal?.newHourlyRewardRate?.toString())}</Typography>
                                   </Grid>
                                 )}
                                 {ethers.ZeroAddress !== proposal.pairToAdd && (
