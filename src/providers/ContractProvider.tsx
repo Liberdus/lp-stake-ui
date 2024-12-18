@@ -71,6 +71,11 @@ interface ContractContextType {
   getTokenInfo: (address: string) => Promise<TokenInfo>;
   getERC20Balance: (address: string, tokenAddress: string) => Promise<bigint>;
 
+  // Action info
+  getActionApproval: (actionId: number) => Promise<boolean>;
+  getActionPairs: (actionId: number) => Promise<string[]>;
+  getActionWeights: (actionId: number) => Promise<string[]>;
+
   // Events
   getEvents: () => ContractEvent[];
 }
@@ -107,6 +112,9 @@ const ContractContext = createContext<ContractContextType>({
   hasAdminRole: async () => false,
   getTokenInfo: async () => ({ address: '', symbol: '', decimals: 0 }),
   getERC20Balance: async () => BigInt(0),
+  getActionApproval: async () => false,
+  getActionPairs: async () => [],
+  getActionWeights: async () => [],
   getEvents: () => [],
 });
 
@@ -590,6 +598,39 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
     }
   };
 
+  const getActionApproval = async (actionId: number) => {
+    try {
+      if (!contract) throw new Error('Contract not initialized');
+      return await contract.getActionApproval(actionId);
+    } catch (err) {
+      console.log(err);
+      setError(new Error('Failed to get action approval'));
+      return [];
+    }
+  };
+
+  const getActionPairs = async (actionId: number) => {
+    try {
+      if (!contract) throw new Error('Contract not initialized');
+      return await contract.getActionPairs(actionId);
+    } catch (err) {
+      console.log(err);
+      setError(new Error('Failed to get action pairs'));
+      return [];
+    }
+  };
+
+  const getActionWeights = async (actionId: number) => {
+    try {
+      if (!contract) throw new Error('Contract not initialized');
+      return await contract.getActionWeights(actionId);
+    } catch (err) {
+      console.log(err);
+      setError(new Error('Failed to get action weights'));
+      return [];
+    }
+  };
+
   const getEvents = () => events;
 
   return (
@@ -631,6 +672,10 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
         // Token info
         getTokenInfo,
         getERC20Balance,
+        // Action info
+        getActionApproval,
+        getActionPairs,
+        getActionWeights,
         // Events
         getEvents,
         getContractAddress,
