@@ -181,7 +181,18 @@ const MultiSignPanel: React.FC<MultiSignPanelProps> = () => {
                                 )}
                                 {ethers.ZeroAddress !== proposal.pairToAdd && (
                                   <Grid item xs={12}>
-                                    <Typography variant="body2">Pair to Add: {truncateAddress(proposal.pairToAdd)}</Typography>
+                                    <Typography variant="body2">
+                                      {proposal.actionType.toString() !== '4' ? 'Pair to Add: ' : 'Original Signer: '}
+                                      {truncateAddress(proposal.pairToAdd)}
+                                    </Typography>
+                                  </Grid>
+                                )}
+                                {ethers.ZeroAddress !== proposal.pairToRemove && (
+                                  <Grid item xs={12}>
+                                    <Typography variant="body2">
+                                      {proposal.actionType.toString() !== '4' ? 'Pair to Remove: ' : 'New Signer: '}
+                                      {truncateAddress(proposal.pairToRemove)}
+                                    </Typography>
                                   </Grid>
                                 )}
                                 {proposal.pairNameToAdd && (
@@ -197,11 +208,6 @@ const MultiSignPanel: React.FC<MultiSignPanelProps> = () => {
                                 {proposal.weightToAdd !== 0n && (
                                   <Grid item xs={12}>
                                     <Typography variant="body2">Weight: {ethers.formatEther(proposal.weightToAdd.toString())}</Typography>
-                                  </Grid>
-                                )}
-                                {ethers.ZeroAddress !== proposal.pairToRemove && (
-                                  <Grid item xs={12}>
-                                    <Typography variant="body2">Pair to Remove: {truncateAddress(proposal.pairToRemove)}</Typography>
                                   </Grid>
                                 )}
                                 {ethers.ZeroAddress !== proposal.recipient && (
