@@ -48,6 +48,8 @@ interface ContractEvent {
 interface Action {
   actionType: number;
   newHourlyRewardRate: bigint;
+  pairs: string[];
+  weights: bigint[];
   pairToAdd: string;
   pairNameToAdd: string;
   platformToAdd: string;

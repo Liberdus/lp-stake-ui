@@ -23,8 +23,9 @@ const MultiSignPanel: React.FC<MultiSignPanelProps> = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set());
   const [refetch, setRefetch] = useAtom(refetchAtom);
-  const { contract, approveAction, executeAction, getActionCounter, getRequiredApprovals, getActions } = useContract();
+  const { contract, approveAction, executeAction, getActionCounter, getRequiredApprovals, getActions, getActionPairs, getActionWeights } = useContract();
 
+  console.log('proposals', proposals);
   async function loadContractData() {
     setIsLoading(true);
     try {
@@ -33,7 +34,26 @@ const MultiSignPanel: React.FC<MultiSignPanelProps> = () => {
       let tmpProposals: Action[] = [];
       for (let i = 1; i <= counter; i++) {
         const proposal = await getActions(i);
-        tmpProposals.push(proposal);
+        const pairs = await getActionPairs(i);
+        const weights = await getActionWeights(i);
+        tmpProposals.push({
+          actionType: proposal.actionType,
+          newHourlyRewardRate: proposal.newHourlyRewardRate,
+          pairs: pairs.map((pair) => pair.toString()),
+          weights: weights.map((weight) => BigInt(weight)),
+          pairToAdd: proposal.pairToAdd,
+          pairNameToAdd: proposal.pairNameToAdd,
+          platformToAdd: proposal.platformToAdd,
+          weightToAdd: proposal.weightToAdd,
+          pairToRemove: proposal.pairToRemove,
+          recipient: proposal.recipient,
+          withdrawAmount: proposal.withdrawAmount,
+          executed: proposal.executed,
+          expired: proposal.expired,
+          approvals: proposal.approvals,
+          approvedBy: proposal.approvedBy,
+          proposedTime: proposal.proposedTime,
+        });
       }
       setProposals(tmpProposals);
       setActionCounter(counter);
@@ -157,7 +177,7 @@ const MultiSignPanel: React.FC<MultiSignPanelProps> = () => {
                               <Grid container spacing={1}>
                                 {proposal?.newHourlyRewardRate !== 0n && (
                                   <Grid item xs={12}>
-                                    <Typography variant="body2">New Hourly Reward Rate: {ethers.formatEther(proposal?.newHourlyRewardRate?.toString())}</Typography>
+                                    <Typography variant="body2">New Hourly Reward Rate: {ethers.formatEther(proposal?.newHourlyRewardRate)}</Typography>
                                   </Grid>
                                 )}
                                 {ethers.ZeroAddress !== proposal.pairToAdd && (
@@ -183,6 +203,26 @@ const MultiSignPanel: React.FC<MultiSignPanelProps> = () => {
                                 {ethers.ZeroAddress !== proposal.pairToRemove && (
                                   <Grid item xs={12}>
                                     <Typography variant="body2">Pair to Remove: {truncateAddress(proposal.pairToRemove)}</Typography>
+                                  </Grid>
+                                )}
+                                {ethers.ZeroAddress !== proposal.recipient && (
+                                  <Grid item xs={12}>
+                                    <Typography variant="body2">Recipient: {truncateAddress(proposal.recipient)}</Typography>
+                                  </Grid>
+                                )}
+                                {proposal.withdrawAmount !== 0n && (
+                                  <Grid item xs={12}>
+                                    <Typography variant="body2">Withdraw Amount: {ethers.formatEther(proposal.withdrawAmount.toString())}</Typography>
+                                  </Grid>
+                                )}
+                                {proposal.pairs.length > 0 && (
+                                  <Grid item xs={12}>
+                                    <Typography variant="body2">Pairs: {proposal.pairs.map((pair) => truncateAddress(pair)).join(', ')}</Typography>
+                                  </Grid>
+                                )}
+                                {proposal.weights.length > 0 && (
+                                  <Grid item xs={12}>
+                                    <Typography variant="body2">Weights: {proposal.weights.map((weight) => weight.toString()).join(', ')}</Typography>
                                   </Grid>
                                 )}
                               </Grid>
