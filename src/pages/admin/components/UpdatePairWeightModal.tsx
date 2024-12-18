@@ -1,7 +1,6 @@
 import ModalBox from '@/components/ModalBox';
-import useNotification from '@/hooks/useNotification';
 import { useContract } from '@/providers/ContractProvider';
-import { Box, Button, Card, CardActions, CardContent, Modal, TextField, Typography } from '@mui/material';
+import { Box, Button, Card, CardContent, Modal, TextField, Typography } from '@mui/material';
 import { ethers } from 'ethers';
 import { useEffect, useState } from 'react';
 
@@ -17,7 +16,6 @@ const UpdatePairWeightModal: React.FC<UpdatePairWeightModalProps> = ({ open, onC
   const [maxWeight, setMaxWeight] = useState<number>();
 
   const { proposeUpdatePairWeights, getMaxWeight } = useContract();
-  const { showNotification } = useNotification();
 
   useEffect(() => {
     async function loadContractData() {

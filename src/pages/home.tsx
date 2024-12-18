@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { userInfoAtom } from '@/store/userInfo';
 import { useAtom, useAtomValue } from 'jotai';
 import { useEthersSigner } from '@/hooks/useEthersSigner';
 import { useEthersProvider } from '@/hooks/useEthersProvider';
@@ -14,14 +13,13 @@ import { rewardTokenAtom } from '@/store/rewardToken';
 import { refetchAtom } from '@/store/refetch';
 
 const Home: React.FC = () => {
-  const [userInfo, setUserInfo] = useAtom(userInfoAtom);
   const [pairs, setPairs] = useState<PairInfo[]>([]);
   const [hourlyRewardRate, setHourlyRewardRate] = useState<string>('0');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedPair, setSelectedPair] = useState<PairInfo | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const rewardToken = useAtomValue(rewardTokenAtom);
-  const { contract, getPairs, getHourlyRewardRate, getUserStakeInfo, getTVL, getPendingRewards, hasAdminRole } = useContract();
+  const { contract, getPairs, getHourlyRewardRate, getUserStakeInfo, getTVL, getPendingRewards } = useContract();
   const [refetch, setRefetch] = useAtom(refetchAtom);
   const provider = useEthersProvider();
   const signer = useEthersSigner();
@@ -75,7 +73,6 @@ const Home: React.FC = () => {
         setPairs(sortedPairs);
         setHourlyRewardRate(ethers.formatEther(hourlyRate));
       } catch (error) {
-        console.error('Error fetching data:', error);
       }
     }
     setIsLoading(false);

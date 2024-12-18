@@ -6,7 +6,7 @@ import Snackbar, { SnackbarCloseReason } from '@mui/material/Snackbar';
 
 export default function NotifySnackBar() {
   const [open, setOpen] = useState(false);
-  const handleClose = (event?: SyntheticEvent | Event, reason?: SnackbarCloseReason) => {
+  const handleClose = (_event?: SyntheticEvent | Event, reason?: SnackbarCloseReason) => {
     if (reason === 'clickaway') {
       return;
     }

@@ -1,5 +1,4 @@
 import ModalBox from '@/components/ModalBox';
-import useNotification from '@/hooks/useNotification';
 import { useContract } from '@/providers/ContractProvider';
 import { Button, Card, CardActions, CardContent, Modal, TextField, Typography } from '@mui/material';
 import { ethers } from 'ethers';
@@ -18,7 +17,6 @@ const AddPairModal: React.FC<AddPairModalProps> = ({ open, onClose }) => {
   const [maxWeight, setMaxWeight] = useState<number>();
 
   const { contract, proposeAddPair, getMaxWeight } = useContract();
-  const { showNotification } = useNotification();
 
   useEffect(() => {
     async function loadContractData() {

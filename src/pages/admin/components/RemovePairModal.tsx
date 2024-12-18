@@ -1,5 +1,4 @@
 import ModalBox from '@/components/ModalBox';
-import useNotification from '@/hooks/useNotification';
 import { useContract } from '@/providers/ContractProvider';
 import { Button, Card, CardActions, CardContent, Modal, TextField, Typography } from '@mui/material';
 import { ethers } from 'ethers';
@@ -12,8 +11,7 @@ interface RemovePairModalProps {
 
 const RemovePairModal: React.FC<RemovePairModalProps> = ({ open, onClose }) => {
   const [removePairAddress, setRemovePairAddress] = useState<string>('');
-  const { contract, proposeRemovePair } = useContract();
-  const { showNotification } = useNotification();
+  const { proposeRemovePair } = useContract();
 
   const handleProposeRemovePair = async () => {
     if (removePairAddress) {

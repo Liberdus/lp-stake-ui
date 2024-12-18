@@ -179,7 +179,6 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
           decimals: decimals,
         });
       } catch (err) {
-        console.error(err);
       }
     };
     getRewardToken();

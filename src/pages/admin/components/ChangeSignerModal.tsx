@@ -1,5 +1,4 @@
 import ModalBox from '@/components/ModalBox';
-import useNotification from '@/hooks/useNotification';
 import { useContract } from '@/providers/ContractProvider';
 import { Button, Card, CardActions, CardContent, Modal, TextField, Typography } from '@mui/material';
 import { ethers } from 'ethers';
@@ -14,8 +13,7 @@ const ChangeSignerModal: React.FC<ChangeSignerModalProps> = ({ open, onClose }) 
   const [newSignerAddress, setNewSignerAddress] = useState<string>('');
   const [oldSignerAddress, setOldSignerAddress] = useState<string>('');
 
-  const { contract, proposeChangeSigner } = useContract();
-  const { showNotification } = useNotification();
+  const { proposeChangeSigner } = useContract();
 
   const handleProposeChangeSigner = async () => {
     if (oldSignerAddress && newSignerAddress) {

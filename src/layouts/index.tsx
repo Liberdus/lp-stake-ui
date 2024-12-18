@@ -1,11 +1,11 @@
-import { Navigate, Outlet } from 'react-router-dom';
+import { Outlet } from 'react-router-dom';
 import { Box } from '@mui/material';
 import Header from './Header';
 import Footer from './Footer';
 import NotifySnackBar from '@/components/NotifySnackBar';
 import { useEffect } from 'react';
 
-const Layout:React.FC = () => {
+const Layout: React.FC = () => {
   useEffect(() => {
     localStorage.setItem('lastVisit', new Date().getTime().toString());
   }, []);
@@ -15,7 +15,7 @@ const Layout:React.FC = () => {
       sx={{
         minHeight: '100vh',
         display: 'flex',
-        flexDirection: 'column'
+        flexDirection: 'column',
       }}
     >
       <Header />
@@ -26,7 +26,7 @@ const Layout:React.FC = () => {
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          p: 6
+          p: 6,
         }}
       >
         <Outlet />

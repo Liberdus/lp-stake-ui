@@ -1,27 +1,7 @@
-import useNotification from '@/hooks/useNotification';
 import { useContract } from '@/providers/ContractProvider';
 import { Action } from '@/types';
 import { truncateAddress } from '@/utils';
-import {
-  Box,
-  Card,
-  CardContent,
-  CircularProgress,
-  Collapse,
-  Divider,
-  Grid,
-  Grid2,
-  IconButton,
-  Paper,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Tooltip,
-  Typography,
-} from '@mui/material';
+import { Box, Card, CardContent, CircularProgress, Collapse, Divider, Grid, IconButton, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from '@mui/material';
 import { ethers } from 'ethers';
 import { Fragment, useEffect, useState } from 'react';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
@@ -44,7 +24,6 @@ const MultiSignPanel: React.FC<MultiSignPanelProps> = () => {
   const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set());
   const [refetch, setRefetch] = useAtom(refetchAtom);
   const { contract, approveAction, executeAction, getActionCounter, getRequiredApprovals, getActions } = useContract();
-  const { showNotification } = useNotification();
 
   async function loadContractData() {
     setIsLoading(true);
@@ -60,7 +39,6 @@ const MultiSignPanel: React.FC<MultiSignPanelProps> = () => {
       setActionCounter(counter);
       setRequiredApprovals(approvals);
     } catch (error) {
-      console.error('Error loading contract data:', error);
     } finally {
       setIsLoading(false);
       setRefetch(false);
