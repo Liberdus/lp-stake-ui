@@ -23,7 +23,7 @@ import {
   Typography,
 } from '@mui/material';
 import { ethers } from 'ethers';
-import { useEffect, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
@@ -43,7 +43,7 @@ const MultiSignPanel: React.FC<MultiSignPanelProps> = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set());
   const [refetch, setRefetch] = useAtom(refetchAtom);
-  const { approveAction, executeAction, getActionCounter, getRequiredApprovals, getActions } = useContract();
+  const { contract, approveAction, executeAction, getActionCounter, getRequiredApprovals, getActions } = useContract();
   const { showNotification } = useNotification();
 
   async function loadContractData() {
@@ -69,7 +69,7 @@ const MultiSignPanel: React.FC<MultiSignPanelProps> = () => {
 
   useEffect(() => {
     loadContractData();
-  }, []);
+  }, [contract]);
 
   useEffect(() => {
     if (refetch) loadContractData();
@@ -143,7 +143,7 @@ const MultiSignPanel: React.FC<MultiSignPanelProps> = () => {
                   const isExpanded = expandedRows.has(actionId);
 
                   return (
-                    <>
+                    <Fragment key={actionId}>
                       <TableRow>
                         <TableCell>
                           <IconButton size="small" onClick={() => toggleRow(actionId)}>
@@ -158,16 +158,12 @@ const MultiSignPanel: React.FC<MultiSignPanelProps> = () => {
                           <Box sx={{ display: 'flex', gap: 1 }}>
                             {!isExecuted && (
                               <>
-                                <Tooltip title="Approve">
-                                  <IconButton color="primary" onClick={() => handleApproveAction(actionId)}>
-                                    <CheckCircleIcon />
-                                  </IconButton>
-                                </Tooltip>
-                                <Tooltip title="Execute">
-                                  <IconButton color="secondary" onClick={() => handleExecuteAction(actionId)} disabled={!canExecute}>
-                                    <PlayCircleIcon />
-                                  </IconButton>
-                                </Tooltip>
+                                <IconButton color="primary" onClick={() => handleApproveAction(actionId)}>
+                                  <CheckCircleIcon />
+                                </IconButton>
+                                <IconButton color="secondary" onClick={() => handleExecuteAction(actionId)} disabled={!canExecute}>
+                                  <PlayCircleIcon />
+                                </IconButton>
                               </>
                             )}
                           </Box>
@@ -216,7 +212,7 @@ const MultiSignPanel: React.FC<MultiSignPanelProps> = () => {
                           </Collapse>
                         </TableCell>
                       </TableRow>
-                    </>
+                    </Fragment>
                   );
                 })}
               </TableBody>

@@ -25,7 +25,7 @@ const WithdrawalModal: React.FC<WithdrawalModalProps> = ({ open, onClose }) => {
       setBalance(Number(ethers.formatUnits(balance, rewardToken.decimals)));
     };
     fetchBalance();
-  }, [getContractAddress]);
+  }, []);
 
   const handleProposeWithdrawal = async () => {
     await proposeWithdrawRewards(recipient, withdrawAmount);

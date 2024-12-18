@@ -72,7 +72,7 @@ interface ContractContextType {
   getERC20Balance: (address: string, tokenAddress: string) => Promise<bigint>;
 
   // Action info
-  getActionApproval: (actionId: number) => Promise<boolean>;
+  getActionApproval: (actionId: number) => Promise<string[]>;
   getActionPairs: (actionId: number) => Promise<string[]>;
   getActionWeights: (actionId: number) => Promise<string[]>;
 
@@ -112,7 +112,7 @@ const ContractContext = createContext<ContractContextType>({
   hasAdminRole: async () => false,
   getTokenInfo: async () => ({ address: '', symbol: '', decimals: 0 }),
   getERC20Balance: async () => BigInt(0),
-  getActionApproval: async () => false,
+  getActionApproval: async () => [],
   getActionPairs: async () => [],
   getActionWeights: async () => [],
   getEvents: () => [],
@@ -235,9 +235,9 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
       await tokenContract.approve(STAKING_CONTRACT_ADDRESS, ethers.parseEther(amount));
       const tx = await contract.stake(lpToken, ethers.parseEther(amount));
       await tx.wait();
-    } catch (err) {
-      console.log(err);
-      setError(new Error('Failed to stake'));
+    } catch (err: any) {
+      const errorMessage = err.reason || 'Failed to stake';
+      setError(new Error(errorMessage));
     }
   };
 
@@ -246,9 +246,9 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
       if (!contract) throw new Error('Contract not initialized');
       const tx = await contract.unstake(lpToken, ethers.parseEther(amount));
       await tx.wait();
-    } catch (err) {
-      console.log(err);
-      setError(new Error('Failed to unstake'));
+    } catch (err: any) {
+      const errorMessage = err.reason || 'Failed to unstake';
+      setError(new Error(errorMessage));
     }
   };
 
@@ -257,9 +257,9 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
       if (!contract) throw new Error('Contract not initialized');
       const tx = await contract.claimRewards(lpToken);
       await tx.wait();
-    } catch (err) {
-      console.log(err);
-      setError(new Error('Failed to claim rewards'));
+    } catch (err: any) {
+      const errorMessage = err.reason || 'Failed to claim rewards';
+      setError(new Error(errorMessage));
     }
   };
 
@@ -269,9 +269,9 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
       if (!contract) throw new Error('Contract not initialized');
       const tx = await contract.proposeSetHourlyRewardRate(ethers.parseEther(newRate));
       await tx.wait();
-    } catch (err) {
-      console.log(err);
-      setError(new Error('Failed to propose set hourly reward rate'));
+    } catch (err: any) {
+      const errorMessage = err.reason || 'Failed to propose set hourly reward rate';
+      setError(new Error(errorMessage));
     }
   };
 
@@ -281,9 +281,9 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
       const weightsInWei = weights.map((w) => ethers.parseEther(w));
       const tx = await contract.proposeUpdatePairWeights(lpTokens, weightsInWei);
       await tx.wait();
-    } catch (err) {
-      console.log(err);
-      setError(new Error('Failed to propose update pair weights'));
+    } catch (err: any) {
+      const errorMessage = err.reason || 'Failed to propose update pair weights';
+      setError(new Error(errorMessage));
     }
   };
 
@@ -292,9 +292,9 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
       if (!contract) throw new Error('Contract not initialized');
       const tx = await contract.proposeAddPair(lpToken, pairName, platform, ethers.parseEther(weight));
       await tx.wait();
-    } catch (err) {
-      console.log(err);
-      setError(new Error('Failed to propose add pair'));
+    } catch (err: any) {
+      const errorMessage = err.reason || 'Failed to propose add pair';
+      setError(new Error(errorMessage));
     }
   };
 
@@ -303,9 +303,9 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
       if (!contract) throw new Error('Contract not initialized');
       const tx = await contract.proposeRemovePair(lpToken);
       await tx.wait();
-    } catch (err) {
-      console.log(err);
-      setError(new Error('Failed to propose remove pair'));
+    } catch (err: any) {
+      const errorMessage = err.reason || 'Failed to propose remove pair';
+      setError(new Error(errorMessage));
     }
   };
 
@@ -314,9 +314,9 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
       if (!contract) throw new Error('Contract not initialized');
       const tx = await contract.proposeChangeSigner(oldSigner, newSigner);
       await tx.wait();
-    } catch (err) {
-      console.log(err);
-      setError(new Error('Failed to propose change signer'));
+    } catch (err: any) {
+      const errorMessage = err.reason || 'Failed to propose change signer';
+      setError(new Error(errorMessage));
     }
   };
 
@@ -325,9 +325,9 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
       if (!contract) throw new Error('Contract not initialized');
       const tx = await contract.proposeWithdrawRewards(recipient, ethers.parseUnits(amount, rewardToken.decimals));
       await tx.wait();
-    } catch (err) {
-      console.log(err);
-      setError(new Error('Failed to propose withdraw rewards'));
+    } catch (err: any) {
+      const errorMessage = err.reason || 'Failed to propose withdraw rewards';
+      setError(new Error(errorMessage));
     }
   };
 
@@ -336,9 +336,9 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
       if (!contract) throw new Error('Contract not initialized');
       const tx = await contract.approveAction(actionId);
       await tx.wait();
-    } catch (err) {
-      console.log(err);
-      setError(new Error('Failed to approve action'));
+    } catch (err: any) {
+      const errorMessage = err.reason || 'Failed to approve action';
+      setError(new Error(errorMessage));
     }
   };
 
@@ -347,9 +347,9 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
       if (!contract) throw new Error('Contract not initialized');
       const tx = await contract.executeAction(actionId);
       await tx.wait();
-    } catch (err) {
-      console.log(err);
-      setError(new Error('Failed to execute action'));
+    } catch (err: any) {
+      const errorMessage = err.reason || 'Failed to execute action';
+      setError(new Error(errorMessage));
     }
   };
 
@@ -380,9 +380,9 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
       const availableRewards = pendingRewards + (pairRewards * userStakeAmount) / totalLPSupply;
 
       return availableRewards;
-    } catch (err) {
-      console.log(err);
-      setError(new Error('Failed to calculate pending rewards'));
+    } catch (err: any) {
+      const errorMessage = err.reason || 'Failed to calculate pending rewards';
+      setError(new Error(errorMessage));
       return 0;
     }
   };
@@ -391,9 +391,9 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
     try {
       if (!contract || !provider || !rewardTokenContract) throw new Error('Contract not initialized');
       return await calculatePendingRewards(userAddress, lpToken);
-    } catch (err) {
-      console.log(err);
-      setError(new Error('Failed to get pending rewards'));
+    } catch (err: any) {
+      const errorMessage = err.reason || 'Failed to get pending rewards';
+      setError(new Error(errorMessage));
       return 0;
     }
   };
@@ -404,9 +404,9 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
       if (!contract) throw new Error('Contract not initialized');
       const [amount, pendingRewards, lastRewardTime] = await contract.getUserStakeInfo(userAddress, lpToken);
       return { amount, pendingRewards, lastRewardTime };
-    } catch (err) {
-      console.log(err);
-      setError(new Error('Failed to get user stake info'));
+    } catch (err: any) {
+      const errorMessage = err.reason || 'Failed to get user stake info';
+      setError(new Error(errorMessage));
       return { amount: BigInt(0), pendingRewards: BigInt(0), lastRewardTime: BigInt(0) };
     }
   };
@@ -417,9 +417,9 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
       if (!contract) throw new Error('Contract not initialized');
       const [token, platform, weight, isActive] = await contract.pairs(lpToken);
       return { token, platform, weight, isActive };
-    } catch (err) {
-      console.log(err);
-      setError(new Error('Failed to get pair info'));
+    } catch (err: any) {
+      const errorMessage = err.reason || 'Failed to get pair info';
+      setError(new Error(errorMessage));
       return { token: '', platform: '', weight: BigInt(0), isActive: false };
     }
   };
@@ -428,9 +428,9 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
     try {
       if (!contract) throw new Error('Contract not initialized');
       return await contract.getPairs();
-    } catch (err) {
-      console.log(err);
-      setError(new Error('Failed to get pairs'));
+    } catch (err: any) {
+      const errorMessage = err.reason || 'Failed to get pairs';
+      setError(new Error(errorMessage));
       return [];
     }
   };
@@ -440,9 +440,9 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
     try {
       if (!contract) throw new Error('Contract not initialized');
       return await contract.ADMIN_ROLE();
-    } catch (err) {
-      console.log(err);
-      setError(new Error('Failed to get admin role'));
+    } catch (err: any) {
+      const errorMessage = err.reason || 'Failed to get admin role';
+      setError(new Error(errorMessage));
       return '';
     }
   };
@@ -452,9 +452,9 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
       if (!contract) throw new Error('Contract not initialized');
       const adminRole = await getAdminRole();
       return await contract.hasRole(adminRole, address);
-    } catch (err) {
-      console.log(err);
-      setError(new Error('Failed to check role'));
+    } catch (err: any) {
+      const errorMessage = err.reason || 'Failed to check role';
+      setError(new Error(errorMessage));
       return false;
     }
   };
@@ -463,9 +463,9 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
     try {
       if (!contract) throw new Error('Contract not initialized');
       return await contract.getAddress();
-    } catch (err) {
-      console.log(err);
-      setError(new Error('Failed to get contract address'));
+    } catch (err: any) {
+      const errorMessage = err.reason || 'Failed to get contract address';
+      setError(new Error(errorMessage));
       return '';
     }
   };
@@ -474,9 +474,9 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
     try {
       if (!contract) throw new Error('Contract not initialized');
       return Number(ethers.formatEther(await contract.MAX_WEIGHT()));
-    } catch (err) {
-      console.log(err);
-      setError(new Error('Failed to get max weight'));
+    } catch (err: any) {
+      const errorMessage = err.reason || 'Failed to get max weight';
+      setError(new Error(errorMessage));
       return 0;
     }
   };
@@ -485,9 +485,9 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
     try {
       if (!contract) throw new Error('Contract not initialized');
       return await contract.REQUIRED_APPROVALS();
-    } catch (err) {
-      console.log(err);
-      setError(new Error('Failed to get required approvals'));
+    } catch (err: any) {
+      const errorMessage = err.reason || 'Failed to get required approvals';
+      setError(new Error(errorMessage));
       return BigInt(0);
     }
   };
@@ -496,9 +496,9 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
     try {
       if (!contract) throw new Error('Contract not initialized');
       return await contract.hourlyRewardRate();
-    } catch (err) {
-      console.log(err);
-      setError(new Error('Failed to get hourly reward rate'));
+    } catch (err: any) {
+      const errorMessage = err.reason || 'Failed to get hourly reward rate';
+      setError(new Error(errorMessage));
       return BigInt(0);
     }
   };
@@ -507,9 +507,9 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
     try {
       if (!contract) throw new Error('Contract not initialized');
       return await contract.totalWeight();
-    } catch (err) {
-      console.log(err);
-      setError(new Error('Failed to get total weight'));
+    } catch (err: any) {
+      const errorMessage = err.reason || 'Failed to get total weight';
+      setError(new Error(errorMessage));
       return BigInt(0);
     }
   };
@@ -518,9 +518,9 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
     try {
       if (!contract) throw new Error('Contract not initialized');
       return await contract.rewardToken();
-    } catch (err) {
-      console.log(err);
-      setError(new Error('Failed to get reward token'));
+    } catch (err: any) {
+      const errorMessage = err.reason || 'Failed to get reward token';
+      setError(new Error(errorMessage));
       return '';
     }
   };
@@ -529,9 +529,9 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
     try {
       if (!contract) throw new Error('Contract not initialized');
       return await contract.signers();
-    } catch (err) {
-      console.log(err);
-      setError(new Error('Failed to get signers'));
+    } catch (err: any) {
+      const errorMessage = err.reason || 'Failed to get signers';
+      setError(new Error(errorMessage));
       return [];
     }
   };
@@ -540,9 +540,9 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
     try {
       if (!contract) throw new Error('Contract not initialized');
       return await contract.actions(BigInt(actionId));
-    } catch (err) {
-      console.log(err);
-      setError(new Error('Failed to get actions'));
+    } catch (err: any) {
+      const errorMessage = err.reason || 'Failed to get actions';
+      setError(new Error(errorMessage));
       return [];
     }
   };
@@ -551,9 +551,9 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
     try {
       if (!contract) throw new Error('Contract not initialized');
       return await contract.actionCounter();
-    } catch (err) {
-      console.log(err);
-      setError(new Error('Failed to get action counter'));
+    } catch (err: any) {
+      const errorMessage = err.reason || 'Failed to get action counter';
+      setError(new Error(errorMessage));
       return BigInt(0);
     }
   };
@@ -564,9 +564,9 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
       const univ2Contract = new ethers.Contract(lpToken, UNIV2_ABI, provider);
       const balance = await univ2Contract.balanceOf(STAKING_CONTRACT_ADDRESS);
       return balance;
-    } catch (err) {
-      console.log(err);
-      setError(new Error('Failed to get TVL'));
+    } catch (err: any) {
+      const errorMessage = err.reason || 'Failed to get TVL';
+      setError(new Error(errorMessage));
       return BigInt(0);
     }
   };
@@ -577,9 +577,9 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
       const tokenContract = new ethers.Contract(tokenAddress, ERC20_ABI, provider);
       const balance = await tokenContract.balanceOf(address);
       return balance;
-    } catch (err) {
-      console.log(err);
-      setError(new Error('Failed to get ERC20 balance'));
+    } catch (err: any) {
+      const errorMessage = err.reason || 'Failed to get ERC20 balance';
+      setError(new Error(errorMessage));
       return BigInt(0);
     }
   };
@@ -591,9 +591,9 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
       const symbol = await tokenContract.symbol();
       const decimals = await tokenContract.decimals();
       return { address, symbol, decimals };
-    } catch (err) {
-      console.log(err);
-      setError(new Error('Failed to get token info'));
+    } catch (err: any) {
+      const errorMessage = err.reason || 'Failed to get token info';
+      setError(new Error(errorMessage));
       return { address: '', symbol: '', decimals: 0 };
     }
   };
@@ -602,9 +602,9 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
     try {
       if (!contract) throw new Error('Contract not initialized');
       return await contract.getActionApproval(actionId);
-    } catch (err) {
-      console.log(err);
-      setError(new Error('Failed to get action approval'));
+    } catch (err: any) {
+      const errorMessage = err.reason || 'Failed to get action approval';
+      setError(new Error(errorMessage));
       return [];
     }
   };
@@ -613,9 +613,9 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
     try {
       if (!contract) throw new Error('Contract not initialized');
       return await contract.getActionPairs(actionId);
-    } catch (err) {
-      console.log(err);
-      setError(new Error('Failed to get action pairs'));
+    } catch (err: any) {
+      const errorMessage = err.reason || 'Failed to get action pairs';
+      setError(new Error(errorMessage));
       return [];
     }
   };
@@ -624,9 +624,9 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
     try {
       if (!contract) throw new Error('Contract not initialized');
       return await contract.getActionWeights(actionId);
-    } catch (err) {
-      console.log(err);
-      setError(new Error('Failed to get action weights'));
+    } catch (err: any) {
+      const errorMessage = err.reason || 'Failed to get action weights';
+      setError(new Error(errorMessage));
       return [];
     }
   };

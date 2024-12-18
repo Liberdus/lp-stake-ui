@@ -51,11 +51,15 @@ interface Action {
   pairToAdd: string;
   pairNameToAdd: string;
   platformToAdd: string;
-  weightToAdd: bigint;
   pairToRemove: string;
+  weightToAdd: bigint;
+  recipient: string;
+  withdrawAmount: bigint;
   executed: boolean;
+  expired: boolean;
   approvals: number;
   approvedBy: string[];
+  proposedTime: number;
 }
 
 export type { UserInfo, PairInfo, SCPairData, UserStakeInfo, TokenInfo, ContractEvent, Action };

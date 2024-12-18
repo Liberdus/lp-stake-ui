@@ -26,7 +26,7 @@ export const AuthProvider = ({ children }: AuthContextProps) => {
 
   useEffect(() => {
     const setAdmin = async () => {
-      if (signer) {
+      if (contract && signer) {
         const isAdmin = await hasAdminRole(signer.address);
         setUserInfo({
           ...userInfo,

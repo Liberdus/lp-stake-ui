@@ -26,7 +26,7 @@ const Admin: React.FC = () => {
     if (!isAdmin) {
       setOpenAlertModal(true);
     }
-  }, [isAdmin]);
+  }, [userInfo]);
 
   const onClose = () => {
     setModalOpen(0);
