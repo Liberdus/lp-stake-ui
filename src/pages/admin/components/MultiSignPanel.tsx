@@ -222,7 +222,7 @@ const MultiSignPanel: React.FC<MultiSignPanelProps> = () => {
                                 )}
                                 {proposal.weights.length > 0 && (
                                   <Grid item xs={12}>
-                                    <Typography variant="body2">Weights: {proposal.weights.map((weight) => weight.toString()).join(', ')}</Typography>
+                                    <Typography variant="body2">Weights: {proposal.weights.map((weight) => ethers.formatEther(weight.toString())).join(', ')}</Typography>
                                   </Grid>
                                 )}
                               </Grid>
