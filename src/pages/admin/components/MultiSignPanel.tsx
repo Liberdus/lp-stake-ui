@@ -25,7 +25,6 @@ const MultiSignPanel: React.FC<MultiSignPanelProps> = () => {
   const [refetch, setRefetch] = useAtom(refetchAtom);
   const { contract, approveAction, executeAction, getActionCounter, getRequiredApprovals, getActions, getActionPairs, getActionWeights } = useContract();
 
-  console.log('proposals', proposals);
   async function loadContractData() {
     setIsLoading(true);
     try {
