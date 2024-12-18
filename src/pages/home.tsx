@@ -26,19 +26,6 @@ const Home: React.FC = () => {
   const provider = useEthersProvider();
   const signer = useEthersSigner();
 
-  useEffect(() => {
-    async function checkAdminRole() {
-      if (contract && provider && signer) {
-        const isAdmin = await hasAdminRole(signer.address);
-        setUserInfo({
-          ...userInfo,
-          isAdmin: isAdmin,
-        });
-      }
-    }
-    checkAdminRole();
-  }, [contract, provider]);
-
   async function fetchData() {
     setIsLoading(true);
     if (contract && provider) {

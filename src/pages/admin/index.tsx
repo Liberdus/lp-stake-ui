@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useAtom } from 'jotai';
 import { userInfoAtom } from '@/store/userInfo';
 import { useNavigate } from 'react-router-dom';
-import { Container, Typography, Grid, Stack, Button } from '@mui/material';
+import { Container, Typography, Grid, Stack, Button, Modal } from '@mui/material';
 import MultiSignPanel from './components/MultiSignPanel';
 import UpdatePairWeightModal from './components/UpdatePairWeightModal';
 import RemovePairModal from './components/RemovePairModal';
@@ -11,22 +11,22 @@ import ChangeSignerModal from './components/ChangeSignerModal';
 import AddPairModal from './components/AddPairModal';
 import WithdrawalModal from './components/WithdrawalModal';
 import { refetchAtom } from '@/store/refetch';
+import ModalBox from '@/components/ModalBox';
+import { useAuth } from '@/providers/AuthProvider';
 
 const Admin: React.FC = () => {
   const navigate = useNavigate();
   const [userInfo] = useAtom(userInfoAtom);
   const [, setRefetch] = useAtom(refetchAtom);
   const [modalOpen, setModalOpen] = useState<number>(0);
+  const [openAlertModal, setOpenAlertModal] = useState(false);
+  const { isAdmin } = useAuth();
 
   useEffect(() => {
-    if (!userInfo.isAdmin) {
-      navigate('/');
+    if (!isAdmin) {
+      setOpenAlertModal(true);
     }
-  }, [userInfo.isAdmin, navigate]);
-
-  if (!userInfo.isAdmin) {
-    return null;
-  }
+  }, [isAdmin]);
 
   const onClose = () => {
     setModalOpen(0);
@@ -76,6 +76,20 @@ const Admin: React.FC = () => {
       <UpdatePairWeightModal open={modalOpen === 4} onClose={onClose} />
       <ChangeSignerModal open={modalOpen === 5} onClose={onClose} />
       <WithdrawalModal open={modalOpen === 6} onClose={onClose} />
+
+      <Modal
+        open={openAlertModal}
+        onClose={() => {
+          setOpenAlertModal(false);
+          navigate('/');
+        }}
+      >
+        <ModalBox>
+          <Typography variant="h5" gutterBottom>
+            You are not admin. You cant access this page.
+          </Typography>
+        </ModalBox>
+      </Modal>
     </>
   );
 };

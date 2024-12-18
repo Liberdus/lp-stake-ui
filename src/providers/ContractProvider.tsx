@@ -132,7 +132,7 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
   useEffect(() => {
     if (error !== null) {
       showNotification('error', error?.message || '');
-      setError(null)
+      setError(null);
     }
   }, [JSON.stringify(error)]);
 
@@ -221,8 +221,8 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
 
   // Core staking functions
   const stake = async (lpToken: string, amount: string) => {
-    if (!contract) throw new Error('Contract not initialized');
     try {
+      if (!contract) throw new Error('Contract not initialized');
       const tokenContract = new ethers.Contract(lpToken, ERC20_ABI, signer);
       await tokenContract.approve(STAKING_CONTRACT_ADDRESS, ethers.parseEther(amount));
       const tx = await contract.stake(lpToken, ethers.parseEther(amount));
@@ -234,8 +234,8 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
   };
 
   const unstake = async (lpToken: string, amount: string) => {
-    if (!contract) throw new Error('Contract not initialized');
     try {
+      if (!contract) throw new Error('Contract not initialized');
       const tx = await contract.unstake(lpToken, ethers.parseEther(amount));
       await tx.wait();
     } catch (err) {
@@ -245,8 +245,8 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
   };
 
   const claimRewards = async (lpToken: string) => {
-    if (!contract) throw new Error('Contract not initialized');
     try {
+      if (!contract) throw new Error('Contract not initialized');
       const tx = await contract.claimRewards(lpToken);
       await tx.wait();
     } catch (err) {
@@ -257,8 +257,8 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
 
   // Propose functions
   const proposeSetHourlyRewardRate = async (newRate: string) => {
-    if (!contract) throw new Error('Contract not initialized');
     try {
+      if (!contract) throw new Error('Contract not initialized');
       const tx = await contract.proposeSetHourlyRewardRate(ethers.parseEther(newRate));
       await tx.wait();
     } catch (err) {
@@ -268,9 +268,9 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
   };
 
   const proposeUpdatePairWeights = async (lpTokens: string[], weights: string[]) => {
-    if (!contract) throw new Error('Contract not initialized');
-    const weightsInWei = weights.map((w) => ethers.parseEther(w));
     try {
+      if (!contract) throw new Error('Contract not initialized');
+      const weightsInWei = weights.map((w) => ethers.parseEther(w));
       const tx = await contract.proposeUpdatePairWeights(lpTokens, weightsInWei);
       await tx.wait();
     } catch (err) {
@@ -280,8 +280,8 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
   };
 
   const proposeAddPair = async (lpToken: string, pairName: string, platform: string, weight: string) => {
-    if (!contract) throw new Error('Contract not initialized');
     try {
+      if (!contract) throw new Error('Contract not initialized');
       const tx = await contract.proposeAddPair(lpToken, pairName, platform, ethers.parseEther(weight));
       await tx.wait();
     } catch (err) {
@@ -291,8 +291,8 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
   };
 
   const proposeRemovePair = async (lpToken: string) => {
-    if (!contract) throw new Error('Contract not initialized');
     try {
+      if (!contract) throw new Error('Contract not initialized');
       const tx = await contract.proposeRemovePair(lpToken);
       await tx.wait();
     } catch (err) {
@@ -302,8 +302,8 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
   };
 
   const proposeChangeSigner = async (oldSigner: string, newSigner: string) => {
-    if (!contract) throw new Error('Contract not initialized');
     try {
+      if (!contract) throw new Error('Contract not initialized');
       const tx = await contract.proposeChangeSigner(oldSigner, newSigner);
       await tx.wait();
     } catch (err) {
@@ -313,8 +313,8 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
   };
 
   const proposeWithdrawRewards = async (recipient: string, amount: string) => {
-    if (!contract) throw new Error('Contract not initialized');
     try {
+      if (!contract) throw new Error('Contract not initialized');
       const tx = await contract.proposeWithdrawRewards(recipient, ethers.parseUnits(amount, rewardToken.decimals));
       await tx.wait();
     } catch (err) {
@@ -324,8 +324,8 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
   };
 
   const approveAction = async (actionId: number) => {
-    if (!contract) throw new Error('Contract not initialized');
     try {
+      if (!contract) throw new Error('Contract not initialized');
       const tx = await contract.approveAction(actionId);
       await tx.wait();
     } catch (err) {
@@ -335,8 +335,8 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
   };
 
   const executeAction = async (actionId: number) => {
-    if (!contract) throw new Error('Contract not initialized');
     try {
+      if (!contract) throw new Error('Contract not initialized');
       const tx = await contract.executeAction(actionId);
       await tx.wait();
     } catch (err) {
@@ -346,42 +346,54 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
   };
 
   const calculatePendingRewards = async (userAddress: string, lpTokenAddress: string) => {
-    if (!contract || !provider || !rewardTokenContract) throw new Error('Contract not initialized');
-    const hourlyRewardRate = Number(ethers.formatEther(await contract.hourlyRewardRate()));
-    const totalWeight = Number(ethers.formatEther(await contract.totalWeight()));
-    const pairInfo = await contract.getPairInfo(lpTokenAddress);
-    const userStakeInfo = await getUserStakeInfo(userAddress, lpTokenAddress);
+    try {
+      if (!contract || !provider || !rewardTokenContract) throw new Error('Contract not initialized');
+      const hourlyRewardRate = Number(ethers.formatEther(await contract.hourlyRewardRate()));
+      const totalWeight = Number(ethers.formatEther(await contract.totalWeight()));
+      const pairInfo = await contract.getPairInfo(lpTokenAddress);
+      const userStakeInfo = await getUserStakeInfo(userAddress, lpTokenAddress);
 
-    const pairWeight = Number(ethers.formatEther(pairInfo.weight));
-    const userStakeAmount = Number(ethers.formatEther(userStakeInfo.amount));
-    const lastRewardTime = Number(userStakeInfo.lastRewardTime);
-    const pendingRewards = Number(ethers.formatEther(userStakeInfo.pendingRewards));
+      const pairWeight = Number(ethers.formatEther(pairInfo.weight));
+      const userStakeAmount = Number(ethers.formatEther(userStakeInfo.amount));
+      const lastRewardTime = Number(userStakeInfo.lastRewardTime);
+      const pendingRewards = Number(ethers.formatEther(userStakeInfo.pendingRewards));
 
-    const currentBlock = await provider.getBlock('latest');
-    const currentTimestamp = currentBlock?.timestamp || 0;
-    const timeElapsed = currentTimestamp - lastRewardTime;
+      const currentBlock = await provider.getBlock('latest');
+      const currentTimestamp = currentBlock?.timestamp || 0;
+      const timeElapsed = currentTimestamp - lastRewardTime;
 
-    const totalLPSupply = Number(ethers.formatEther(await rewardTokenContract.balanceOf(STAKING_CONTRACT_ADDRESS)));
+      const totalLPSupply = Number(ethers.formatEther(await rewardTokenContract.balanceOf(STAKING_CONTRACT_ADDRESS)));
 
-    if (totalWeight == 0 || pairWeight == 0 || totalLPSupply == 0) {
+      if (totalWeight == 0 || pairWeight == 0 || totalLPSupply == 0) {
+        return 0;
+      }
+      const rewardPerSecond = hourlyRewardRate / 3600;
+      const pairRewards = (rewardPerSecond * timeElapsed * pairWeight) / totalWeight;
+      const availableRewards = pendingRewards + (pairRewards * userStakeAmount) / totalLPSupply;
+
+      return availableRewards;
+    } catch (err) {
+      console.log(err);
+      setError(new Error('Failed to calculate pending rewards'));
       return 0;
     }
-    const rewardPerSecond = hourlyRewardRate / 3600;
-    const pairRewards = (rewardPerSecond * timeElapsed * pairWeight) / totalWeight;
-    const availableRewards = pendingRewards + (pairRewards * userStakeAmount) / totalLPSupply;
-
-    return availableRewards;
   };
 
   const getPendingRewards = async (userAddress: string, lpToken: string) => {
-    if (!contract || !provider || !rewardTokenContract) throw new Error('Contract not initialized');
-    return await calculatePendingRewards(userAddress, lpToken);
+    try {
+      if (!contract || !provider || !rewardTokenContract) throw new Error('Contract not initialized');
+      return await calculatePendingRewards(userAddress, lpToken);
+    } catch (err) {
+      console.log(err);
+      setError(new Error('Failed to get pending rewards'));
+      return 0;
+    }
   };
 
   // User info
   const getUserStakeInfo = async (userAddress: string, lpToken: string) => {
-    if (!contract) throw new Error('Contract not initialized');
     try {
+      if (!contract) throw new Error('Contract not initialized');
       const [amount, pendingRewards, lastRewardTime] = await contract.getUserStakeInfo(userAddress, lpToken);
       return { amount, pendingRewards, lastRewardTime };
     } catch (err) {
@@ -393,8 +405,8 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
 
   // Pair info
   const getPairInfo = async (lpToken: string) => {
-    if (!contract) throw new Error('Contract not initialized');
     try {
+      if (!contract) throw new Error('Contract not initialized');
       const [token, platform, weight, isActive] = await contract.pairs(lpToken);
       return { token, platform, weight, isActive };
     } catch (err) {
@@ -405,8 +417,8 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
   };
 
   const getPairs = async () => {
-    if (!contract) throw new Error('Contract not initialized');
     try {
+      if (!contract) throw new Error('Contract not initialized');
       return await contract.getPairs();
     } catch (err) {
       console.log(err);
@@ -417,8 +429,8 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
 
   // Contract state
   const getAdminRole = async () => {
-    if (!contract) throw new Error('Contract not initialized');
     try {
+      if (!contract) throw new Error('Contract not initialized');
       return await contract.ADMIN_ROLE();
     } catch (err) {
       console.log(err);
@@ -428,8 +440,8 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
   };
 
   const hasAdminRole = async (address: string) => {
-    if (!contract) throw new Error('Contract not initialized');
     try {
+      if (!contract) throw new Error('Contract not initialized');
       const adminRole = await getAdminRole();
       return await contract.hasRole(adminRole, address);
     } catch (err) {
@@ -440,8 +452,8 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
   };
 
   const getContractAddress = async () => {
-    if (!contract) throw new Error('Contract not initialized');
     try {
+      if (!contract) throw new Error('Contract not initialized');
       return await contract.getAddress();
     } catch (err) {
       console.log(err);
@@ -451,8 +463,8 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
   };
 
   const getMaxWeight = async () => {
-    if (!contract) throw new Error('Contract not initialized');
     try {
+      if (!contract) throw new Error('Contract not initialized');
       return Number(ethers.formatEther(await contract.MAX_WEIGHT()));
     } catch (err) {
       console.log(err);
@@ -462,8 +474,8 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
   };
 
   const getRequiredApprovals = async () => {
-    if (!contract) throw new Error('Contract not initialized');
     try {
+      if (!contract) throw new Error('Contract not initialized');
       return await contract.REQUIRED_APPROVALS();
     } catch (err) {
       console.log(err);
@@ -473,8 +485,8 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
   };
 
   const getHourlyRewardRate = async () => {
-    if (!contract) throw new Error('Contract not initialized');
     try {
+      if (!contract) throw new Error('Contract not initialized');
       return await contract.hourlyRewardRate();
     } catch (err) {
       console.log(err);
@@ -484,8 +496,8 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
   };
 
   const getTotalWeight = async () => {
-    if (!contract) throw new Error('Contract not initialized');
     try {
+      if (!contract) throw new Error('Contract not initialized');
       return await contract.totalWeight();
     } catch (err) {
       console.log(err);
@@ -495,8 +507,8 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
   };
 
   const getRewardToken = async () => {
-    if (!contract) throw new Error('Contract not initialized');
     try {
+      if (!contract) throw new Error('Contract not initialized');
       return await contract.rewardToken();
     } catch (err) {
       console.log(err);
@@ -506,8 +518,8 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
   };
 
   const getSigners = async () => {
-    if (!contract) throw new Error('Contract not initialized');
     try {
+      if (!contract) throw new Error('Contract not initialized');
       return await contract.signers();
     } catch (err) {
       console.log(err);
@@ -517,8 +529,8 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
   };
 
   const getActions = async (actionId: number) => {
-    if (!contract) throw new Error('Contract not initialized');
     try {
+      if (!contract) throw new Error('Contract not initialized');
       return await contract.actions(BigInt(actionId));
     } catch (err) {
       console.log(err);
@@ -528,8 +540,8 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
   };
 
   const getActionCounter = async () => {
-    if (!contract) throw new Error('Contract not initialized');
     try {
+      if (!contract) throw new Error('Contract not initialized');
       return await contract.actionCounter();
     } catch (err) {
       console.log(err);
@@ -539,8 +551,8 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
   };
 
   const getTVL = async (lpToken: string) => {
-    if (!contract || !provider) throw new Error('Contract not initialized');
     try {
+      if (!contract || !provider) throw new Error('Contract not initialized');
       const univ2Contract = new ethers.Contract(lpToken, UNIV2_ABI, provider);
       const balance = await univ2Contract.balanceOf(STAKING_CONTRACT_ADDRESS);
       return balance;
@@ -552,8 +564,8 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
   };
 
   const getERC20Balance = async (address: string, tokenAddress: string) => {
-    if (!provider) throw new Error('Provider not initialized');
     try {
+      if (!provider) throw new Error('Provider not initialized');
       const tokenContract = new ethers.Contract(tokenAddress, ERC20_ABI, provider);
       const balance = await tokenContract.balanceOf(address);
       return balance;
@@ -565,8 +577,8 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
   };
 
   const getTokenInfo = async (address: string) => {
-    if (!provider) throw new Error('Provider not initialized');
     try {
+      if (!provider) throw new Error('Provider not initialized');
       const tokenContract = new ethers.Contract(address, ERC20_ABI, provider);
       const symbol = await tokenContract.symbol();
       const decimals = await tokenContract.decimals();

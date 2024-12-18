@@ -9,6 +9,7 @@ import { ContractProvider } from './providers/ContractProvider';
 import { ThemeProvider, createTheme, CssBaseline } from '@mui/material';
 import { useAtom } from 'jotai';
 import { colorModeAtom } from './store/colorMode';
+import { AuthProvider } from './providers/AuthProvider';
 
 const client = new QueryClient();
 
@@ -27,7 +28,7 @@ const App: React.FC = () => {
     },
     typography: {
       fontFamily: '"Exo", "Helvetica", "Arial", sans-serif',
-      fontSize: 15
+      fontSize: 15,
     },
   });
 
@@ -38,7 +39,9 @@ const App: React.FC = () => {
         <QueryClientProvider client={client}>
           <RainbowKitProvider theme={colorMode === 'light' ? lightTheme() : darkTheme()}>
             <ContractProvider>
-              <RouterProvider router={router} />
+              <AuthProvider>
+                <RouterProvider router={router} />
+              </AuthProvider>
             </ContractProvider>
           </RainbowKitProvider>
         </QueryClientProvider>
