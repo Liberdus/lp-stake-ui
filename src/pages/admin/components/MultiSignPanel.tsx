@@ -30,6 +30,7 @@ import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import PlayCircleIcon from '@mui/icons-material/PlayCircle';
 import { useAtom } from 'jotai';
 import { refetchAtom } from '@/store/refetch';
+import RefreshButton from '@/components/RefreshButton';
 
 const ACTION_TYPE = ['SET_HOURLY_REWARD_RATE', 'UPDATE_PAIR_WEIGHTS', 'ADD_PAIR', 'REMOVE_PAIR', 'CHANGE_SIGNER', 'WITHDRAW_REWARDS'];
 
@@ -89,7 +90,10 @@ const MultiSignPanel: React.FC<MultiSignPanelProps> = () => {
   }, [contract]);
 
   useEffect(() => {
-    if (refetch) loadContractData();
+    if (refetch) {
+      loadContractData();
+      setRefetch(false);
+    }
   }, [refetch]);
 
   const handleApproveAction = async (id: number) => {
@@ -120,9 +124,12 @@ const MultiSignPanel: React.FC<MultiSignPanelProps> = () => {
   return (
     <Card>
       <CardContent>
-        <Typography variant="h5" gutterBottom>
-          Proposals Panel
-        </Typography>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Typography variant="h5" gutterBottom>
+            Proposals Panel
+          </Typography>
+          <RefreshButton onClick={() => setRefetch(true)} loading={isLoading} />
+        </Box>
 
         <Box sx={{ mb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <FormControlLabel control={<Checkbox checked={hideExecuted} onChange={(e) => setHideExecuted(e.target.checked)} />} label="Hide executed transactions" />
@@ -199,11 +206,11 @@ const MultiSignPanel: React.FC<MultiSignPanelProps> = () => {
                                 Details:
                               </Typography>
                               <Grid container spacing={1}>
-                                {proposal?.newHourlyRewardRate !== 0n && (
+                                {proposal.newHourlyRewardRate && proposal.newHourlyRewardRate !== 0n ? (
                                   <Grid item xs={12}>
                                     <Typography variant="body2">New Hourly Reward Rate: {ethers.formatEther(proposal?.newHourlyRewardRate)}</Typography>
                                   </Grid>
-                                )}
+                                ) : null}
                                 {ethers.ZeroAddress !== proposal.pairToAdd && (
                                   <Grid item xs={12}>
                                     <Typography variant="body2">

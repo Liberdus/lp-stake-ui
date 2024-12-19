@@ -4,13 +4,14 @@ import { useEthersSigner } from '@/hooks/useEthersSigner';
 import { useEthersProvider } from '@/hooks/useEthersProvider';
 import { useContract } from '@/providers/ContractProvider';
 import { ethers } from 'ethers';
-import { Container, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, Skeleton } from '@mui/material';
+import { Container, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, Skeleton, Box } from '@mui/material';
 import { PairInfo, SCPairData } from '@/types';
 import StakingModal from '@/components/StakingModal';
 import SimpleAlert from '@/components/SimpleAlert';
 import { calcAPR, fetchTokenPrice } from '@/utils';
 import { rewardTokenAtom } from '@/store/rewardToken';
 import { refetchAtom } from '@/store/refetch';
+import RefreshButton from '@/components/RefreshButton';
 
 const Home: React.FC = () => {
   const [pairs, setPairs] = useState<PairInfo[]>([]);
@@ -19,7 +20,7 @@ const Home: React.FC = () => {
   const [selectedPair, setSelectedPair] = useState<PairInfo | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const rewardToken = useAtomValue(rewardTokenAtom);
-  const { contract, getPairs, getHourlyRewardRate, getUserStakeInfo, getTVL, getPendingRewards } = useContract();
+  const { contract, getPairs, getHourlyRewardRate, getUserStakeInfo, getTVL, getPendingRewards, getAllowance } = useContract();
   const [refetch, setRefetch] = useAtom(refetchAtom);
   const provider = useEthersProvider();
   const signer = useEthersSigner();
@@ -34,6 +35,7 @@ const Home: React.FC = () => {
           pairsData.map(async (pair: SCPairData) => {
             let myShare = 0;
             let myEarnings = 0;
+            let allowance = BigInt(0);
 
             const lpTokenPrice = await fetchTokenPrice(pair.lpToken);
             const rewardTokenPrice = await fetchTokenPrice(rewardToken.address);
@@ -42,9 +44,11 @@ const Home: React.FC = () => {
             const tvl = Number(ethers.formatEther(await getTVL(pair.lpToken)));
 
             if (signer) {
-              const userStake = await getUserStakeInfo(await signer.getAddress(), pair.lpToken);
+              const userAddress = await signer.getAddress();
+              const userStake = await getUserStakeInfo(userAddress, pair.lpToken);
               myShare = (Number(ethers.formatEther(userStake.amount)) * 100) / tvl || 0;
-              myEarnings = await getPendingRewards(await signer.getAddress(), pair.lpToken);
+              myEarnings = await getPendingRewards(userAddress, pair.lpToken);
+              allowance = await getAllowance(pair.lpToken, userAddress);
             }
 
             return {
@@ -57,6 +61,7 @@ const Home: React.FC = () => {
               tvl,
               myShare,
               myEarnings,
+              allowance,
             };
           })
         );
@@ -72,8 +77,7 @@ const Home: React.FC = () => {
         });
         setPairs(sortedPairs);
         setHourlyRewardRate(ethers.formatEther(hourlyRate));
-      } catch (error) {
-      }
+      } catch (error) {}
     }
     setIsLoading(false);
   }
@@ -103,10 +107,12 @@ const Home: React.FC = () => {
       <Typography variant="h3" align="center" gutterBottom sx={{ my: 4 }}>
         LP Staking
       </Typography>
-
-      <Typography variant="h6" gutterBottom>
-        Hourly Reward Rate: {Number(hourlyRewardRate).toFixed(2)} LIB
-      </Typography>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Typography variant="h6" gutterBottom>
+          Hourly Reward Rate: {Number(hourlyRewardRate).toFixed(2)} LIB
+        </Typography>
+        <RefreshButton onClick={() => setRefetch(true)} loading={isLoading} />
+      </Box>
 
       <SimpleAlert />
 
