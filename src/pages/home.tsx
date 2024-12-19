@@ -4,7 +4,7 @@ import { useEthersSigner } from '@/hooks/useEthersSigner';
 import { useEthersProvider } from '@/hooks/useEthersProvider';
 import { useContract } from '@/providers/ContractProvider';
 import { ethers } from 'ethers';
-import { Container, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, Skeleton, Box } from '@mui/material';
+import { Container, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, Skeleton, Box, Card, CardContent, Grid, Stack, Chip } from '@mui/material';
 import { PairInfo, SCPairData } from '@/types';
 import StakingModal from '@/components/StakingModal';
 import SimpleAlert from '@/components/SimpleAlert';
@@ -12,6 +12,15 @@ import { calcAPR, fetchTokenPrice } from '@/utils';
 import { rewardTokenAtom } from '@/store/rewardToken';
 import { refetchAtom } from '@/store/refetch';
 import RefreshButton from '@/components/RefreshButton';
+import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
+import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
+import PercentIcon from '@mui/icons-material/Percent';
+import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import ShareIcon from '@mui/icons-material/Share';
+import RedeemIcon from '@mui/icons-material/Redeem';
 
 const Home: React.FC = () => {
   const [pairs, setPairs] = useState<PairInfo[]>([]);
@@ -102,81 +111,104 @@ const Home: React.FC = () => {
   };
 
   return (
-    <Container>
-      <Typography variant="h3" align="center" gutterBottom sx={{ my: 4 }}>
-        LP Staking
-      </Typography>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Typography variant="h6" gutterBottom>
-          Hourly Reward Rate: {Number(hourlyRewardRate).toFixed(2)} LIB
+    <Container maxWidth="xl">
+      <Grid sx={{ mb: 4, mt: 4 }}>
+        <Typography variant="h3" align="center" gutterBottom>
+          LP Staking
         </Typography>
-        <RefreshButton onClick={() => setRefetch(true)} loading={isLoading} />
-      </Box>
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 2 }}>
+          <AccessTimeIcon />
+          <Typography variant="h6">Hourly Reward Rate: {Number(hourlyRewardRate).toFixed(2)} LIB</Typography>
+          <RefreshButton onClick={() => setRefetch(true)} loading={isLoading} />
+        </Box>
+      </Grid>
 
       <SimpleAlert />
 
-      <TableContainer component={Paper} sx={{ mt: 3 }}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>Pair</TableCell>
-              <TableCell>Platform</TableCell>
-              <TableCell>Est. APR</TableCell>
-              <TableCell>Reward Weight</TableCell>
-              <TableCell>TVL</TableCell>
-              <TableCell>My Pool Share</TableCell>
-              <TableCell>My Earnings</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {isLoading ? (
-              <>
+      {isLoading ? (
+        <Stack>
+          {[1, 2, 3].map((i) => (
+            <Grid item xs={12} md={4} key={i}>
+              <Card>
+                <CardContent>
+                  <Skeleton variant="rectangular" height={60} />
+                </CardContent>
+              </Card>
+            </Grid>
+          ))}
+        </Stack>
+      ) : (
+        <Paper sx={{ width: '100%', overflow: 'hidden' }}>
+          <TableContainer sx={{ maxHeight: 440 }}>
+            <Table stickyHeader>
+              <TableHead>
                 <TableRow>
-                  <TableCell colSpan={7} align="center">
-                    <Skeleton variant="rectangular" height={40} />
-                  </TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell colSpan={7} align="center">
-                    <Skeleton variant="rectangular" height={40} />
-                  </TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell colSpan={7} align="center">
-                    <Skeleton variant="rectangular" height={40} />
-                  </TableCell>
-                </TableRow>
-              </>
-            ) : (
-              pairs.map((pair) => (
-                <TableRow key={pair.lpToken}>
                   <TableCell>
-                    <Button onClick={() => handlePairClick(pair.lpToken.toString())} color="primary">
-                      {pair.pairName}
-                    </Button>
-                  </TableCell>
-                  <TableCell>{pair.platform}</TableCell>
-                  <TableCell>{pair.apr.toFixed(1)}%</TableCell>
-                  <TableCell>
-                    {ethers.formatEther(pair.weight)} ({((Number(pair.weight) * 100) / Number(pairs.reduce((acc, p) => acc + p.weight, BigInt(0)))).toFixed(2)}%)
-                  </TableCell>
-                  <TableCell>{pair.tvl.toFixed(2)}</TableCell>
-                  <TableCell>
-                    <Button onClick={() => handleShareClick(pair)} color="primary" disabled={!signer}>
-                      {pair.myShare.toFixed(2)}%
-                    </Button>
+                    <SwapHorizIcon sx={{ mr: 1 }} />
+                    Pair
                   </TableCell>
                   <TableCell>
-                    <Button onClick={() => handleShareClick(pair)} color="primary" disabled={!signer}>
-                      {pair.myEarnings.toFixed(4)} LIB
-                    </Button>
+                    <AccountBalanceIcon sx={{ mr: 1 }} />
+                    Platform
+                  </TableCell>
+                  <TableCell>
+                    <PercentIcon sx={{ mr: 1 }} />
+                    Est. APR
+                  </TableCell>
+                  <TableCell>
+                    <MonetizationOnIcon sx={{ mr: 1 }} />
+                    Reward Weight
+                  </TableCell>
+                  <TableCell>
+                    <AccountBalanceWalletIcon sx={{ mr: 1 }} />
+                    TVL
+                  </TableCell>
+                  <TableCell>
+                    <ShareIcon sx={{ mr: 1 }} />
+                    My Pool Share
+                  </TableCell>
+                  <TableCell>
+                    <RedeemIcon sx={{ mr: 1 }} />
+                    My Earnings
                   </TableCell>
                 </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </TableContainer>
+              </TableHead>
+              <TableBody>
+                {pairs.map((pair) => (
+                  <TableRow key={pair.lpToken} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
+                    <TableCell>
+                      <Button onClick={() => handlePairClick(pair.lpToken.toString())} variant="text" color="primary" endIcon={<OpenInNewIcon />} sx={{ fontWeight: 'bold' }}>
+                        {pair.pairName}
+                      </Button>
+                    </TableCell>
+                    <TableCell>
+                      <Chip label={pair.platform} color="primary" variant="outlined" />
+                    </TableCell>
+                    <TableCell sx={{ color: 'success.main', fontWeight: 'bold' }}>{pair.apr.toFixed(1)}%</TableCell>
+                    <TableCell>
+                      <Chip
+                        label={`${ethers.formatEther(pair.weight)} (${((Number(pair.weight) * 100) / Number(pairs.reduce((acc, p) => acc + p.weight, BigInt(0)))).toFixed(2)}%)`}
+                        color="secondary"
+                      />
+                    </TableCell>
+                    <TableCell>{pair.tvl.toFixed(2)}</TableCell>
+                    <TableCell>
+                      <Button onClick={() => handleShareClick(pair)} variant="contained" color="primary" disabled={!signer} size="small" startIcon={<ShareIcon />}>
+                        {pair.myShare.toFixed(2)}%
+                      </Button>
+                    </TableCell>
+                    <TableCell>
+                      <Button onClick={() => handleShareClick(pair)} variant="contained" color="secondary" disabled={!signer} size="small" startIcon={<RedeemIcon />}>
+                        {pair.myEarnings.toFixed(4)} LIB
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </Paper>
+      )}
 
       <StakingModal selectedPair={selectedPair} isModalOpen={isModalOpen} setIsModalOpen={setIsModalOpen} />
     </Container>

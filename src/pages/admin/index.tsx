@@ -23,11 +23,11 @@ const Admin: React.FC = () => {
   const [openAlertModal, setOpenAlertModal] = useState(false);
   const { isAdmin } = useAuth();
 
-  useEffect(() => {
-    if (!isAdmin) {
-      setOpenAlertModal(true);
-    }
-  }, [userInfo]);
+  // useEffect(() => {
+  //   if (!isAdmin) {
+  //     setOpenAlertModal(true);
+  //   }
+  // }, [userInfo]);
 
   const onClose = () => {
     setModalOpen(0);
