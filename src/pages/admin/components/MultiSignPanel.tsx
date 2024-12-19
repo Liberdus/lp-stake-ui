@@ -7,7 +7,6 @@ import {
   CardContent,
   CircularProgress,
   Collapse,
-  Divider,
   Grid,
   IconButton,
   Paper,
@@ -133,22 +132,10 @@ const MultiSignPanel: React.FC<MultiSignPanelProps> = () => {
         </Box>
 
         <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center', bgcolor: 'background.paper', p: 2, borderRadius: 1 }}>
-          <FormControlLabel 
-            control={<Checkbox checked={hideExecuted} onChange={(e) => setHideExecuted(e.target.checked)} color="primary" />} 
-            label="Hide executed transactions" 
-          />
+          <FormControlLabel control={<Checkbox checked={hideExecuted} onChange={(e) => setHideExecuted(e.target.checked)} color="primary" />} label="Hide executed transactions" />
           <Box>
-            <Chip 
-              label={`Total Proposals: ${actionCounter?.toString() || 0}`}
-              color="primary"
-              variant="outlined"
-              sx={{ mr: 1 }}
-            />
-            <Chip 
-              label={`Required Approvals: ${requiredApprovals?.toString() || 0}`}
-              color="secondary"
-              variant="outlined"
-            />
+            <Chip label={`Total Proposals: ${actionCounter?.toString() || 0}`} color="primary" variant="outlined" sx={{ mr: 1 }} />
+            <Chip label={`Required Approvals: ${requiredApprovals?.toString() || 0}`} color="secondary" variant="outlined" />
           </Box>
         </Box>
 
@@ -158,7 +145,9 @@ const MultiSignPanel: React.FC<MultiSignPanelProps> = () => {
           </Box>
         ) : filteredProposals.length === 0 ? (
           <Box sx={{ textAlign: 'center', p: 4, bgcolor: 'background.paper', borderRadius: 1 }}>
-            <Typography variant="h6" color="text.secondary">No proposals available.</Typography>
+            <Typography variant="h6" color="text.secondary">
+              No proposals available.
+            </Typography>
           </Box>
         ) : (
           <TableContainer component={Paper} elevation={2}>
@@ -182,10 +171,10 @@ const MultiSignPanel: React.FC<MultiSignPanelProps> = () => {
 
                   return (
                     <Fragment key={actionId}>
-                      <TableRow 
-                        sx={{ 
+                      <TableRow
+                        sx={{
                           '&:hover': { bgcolor: 'action.hover' },
-                          bgcolor: isExpanded ? 'action.selected' : 'inherit'
+                          bgcolor: isExpanded ? 'action.selected' : 'inherit',
                         }}
                       >
                         <TableCell>
@@ -197,58 +186,26 @@ const MultiSignPanel: React.FC<MultiSignPanelProps> = () => {
                           <Chip label={actionId} size="small" />
                         </TableCell>
                         <TableCell sx={{ textAlign: 'center' }}>
-                          <Chip 
-                            label={ACTION_TYPE[proposal.actionType]} 
-                            color="primary" 
-                            variant="outlined"
-                            size="small"
-                          />
+                          <Chip label={ACTION_TYPE[proposal.actionType]} color="primary" variant="outlined" size="small" />
                         </TableCell>
                         <TableCell sx={{ textAlign: 'center' }}>
-                          <Chip 
-                            label={`${proposal.approvals?.toString() || 0} / ${requiredApprovals?.toString() || 0}`}
-                            color={canExecute ? "success" : "default"}
-                            size="small"
-                          />
+                          <Chip label={`${proposal.approvals?.toString() || 0} / ${requiredApprovals?.toString() || 0}`} color={canExecute ? 'success' : 'default'} size="small" />
                         </TableCell>
                         <TableCell sx={{ textAlign: 'center' }}>
-                          {isExecuted ? (
-                            <Chip 
-                              icon={<CheckCircleIcon />} 
-                              label="Executed" 
-                              color="success" 
-                              size="small"
-                            />
-                          ) : (
-                            <Chip 
-                              icon={<CancelIcon />} 
-                              label="Pending" 
-                              color="warning"
-                              size="small"
-                            />
-                          )}
+                          {isExecuted ? <Chip icon={<CheckCircleIcon />} label="Executed" color="success" size="small" /> : <Chip icon={<CancelIcon />} label="Pending" color="warning" size="small" />}
                         </TableCell>
                         <TableCell sx={{ textAlign: 'center' }}>
                           <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
                             {!isExecuted && (
                               <>
                                 <Tooltip title="Approve Action">
-                                  <IconButton 
-                                    color="primary" 
-                                    onClick={() => handleApproveAction(actionId)}
-                                    size="small"
-                                  >
+                                  <IconButton color="primary" onClick={() => handleApproveAction(actionId)} size="small">
                                     <CheckCircleIcon />
                                   </IconButton>
                                 </Tooltip>
-                                <Tooltip title={canExecute ? "Execute Action" : "Needs more approvals"}>
+                                <Tooltip title={canExecute ? 'Execute Action' : 'Needs more approvals'}>
                                   <span>
-                                    <IconButton 
-                                      color="secondary" 
-                                      onClick={() => handleExecuteAction(actionId)} 
-                                      disabled={!canExecute}
-                                      size="small"
-                                    >
+                                    <IconButton color="secondary" onClick={() => handleExecuteAction(actionId)} disabled={!canExecute} size="small">
                                       <PlayCircleIcon />
                                     </IconButton>
                                   </span>

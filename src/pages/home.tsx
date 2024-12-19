@@ -4,7 +4,7 @@ import { useEthersSigner } from '@/hooks/useEthersSigner';
 import { useEthersProvider } from '@/hooks/useEthersProvider';
 import { useContract } from '@/providers/ContractProvider';
 import { ethers } from 'ethers';
-import { Container, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, Skeleton, Box, Card, CardContent, Grid, Stack, Chip } from '@mui/material';
+import { Container, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, Skeleton, Box, Card, CardContent, Grid, Chip } from '@mui/material';
 import { PairInfo, SCPairData } from '@/types';
 import StakingModal from '@/components/StakingModal';
 import SimpleAlert from '@/components/SimpleAlert';
