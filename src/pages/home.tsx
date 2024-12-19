@@ -126,17 +126,15 @@ const Home: React.FC = () => {
       <SimpleAlert />
 
       {isLoading ? (
-        <Stack>
+        <Card>
           {[1, 2, 3].map((i) => (
             <Grid item xs={12} md={4} key={i}>
-              <Card>
-                <CardContent>
-                  <Skeleton variant="rectangular" height={60} />
-                </CardContent>
-              </Card>
+              <CardContent>
+                <Skeleton variant="rectangular" height={40} />
+              </CardContent>
             </Grid>
           ))}
-        </Stack>
+        </Card>
       ) : (
         <Paper sx={{ width: '100%', overflow: 'hidden' }}>
           <TableContainer sx={{ maxHeight: 440 }}>
