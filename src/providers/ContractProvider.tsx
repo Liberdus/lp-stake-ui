@@ -221,8 +221,28 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
       transactionHash: event.transactionHash || '',
       blockNumber: event.blockNumber,
     };
-
-    showAlert(eventName, 'info');
+    if(newEvent.eventName === 'StakeAdded') {
+      const userAddress = newEvent.args[0];
+      const lpToken = newEvent.args[1];
+      const amount = newEvent.args[2];
+      if(userAddress === signer?.getAddress()) {
+        showAlert(`Staked ${amount} ${lpToken}`, 'info');
+      }
+    } else if(newEvent.eventName === 'StakeRemoved') {
+      const userAddress = newEvent.args[0];
+      const lpToken = newEvent.args[1];
+      const amount = newEvent.args[2];
+      if(userAddress === signer?.getAddress()) {
+        showAlert(`Unstaked ${amount} ${lpToken}`, 'info');
+      }
+    } else if(newEvent.eventName === 'RewardsClaimed') {
+      const userAddress = newEvent.args[0];
+      const lpToken = newEvent.args[1];
+      const amount = newEvent.args[2];
+      if(userAddress === signer?.getAddress()) {
+        showAlert(`Claimed ${amount} ${lpToken}`, 'info');
+      }
+    }
     setEvents((prev) => [newEvent, ...prev]);
   };
 

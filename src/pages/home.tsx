@@ -20,7 +20,7 @@ const Home: React.FC = () => {
   const [selectedPair, setSelectedPair] = useState<PairInfo | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const rewardToken = useAtomValue(rewardTokenAtom);
-  const { contract, getPairs, getHourlyRewardRate, getUserStakeInfo, getTVL, getPendingRewards, getAllowance } = useContract();
+  const { contract, getPairs, getHourlyRewardRate, getUserStakeInfo, getTVL, getPendingRewards } = useContract();
   const [refetch, setRefetch] = useAtom(refetchAtom);
   const provider = useEthersProvider();
   const signer = useEthersSigner();
@@ -48,7 +48,6 @@ const Home: React.FC = () => {
               const userStake = await getUserStakeInfo(userAddress, pair.lpToken);
               myShare = (Number(ethers.formatEther(userStake.amount)) * 100) / tvl || 0;
               myEarnings = await getPendingRewards(userAddress, pair.lpToken);
-              allowance = await getAllowance(pair.lpToken, userAddress);
             }
 
             return {
