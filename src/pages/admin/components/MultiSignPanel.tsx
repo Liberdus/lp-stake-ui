@@ -20,6 +20,8 @@ import {
   Typography,
   FormControlLabel,
   Checkbox,
+  Chip,
+  Tooltip,
 } from '@mui/material';
 import { ethers } from 'ethers';
 import { Fragment, useEffect, useState } from 'react';
@@ -104,7 +106,6 @@ const MultiSignPanel: React.FC<MultiSignPanelProps> = () => {
 
   const handleExecuteAction = async (id: number) => {
     await executeAction(id);
-    // Refresh proposals after action
     const updatedProposal = await getActions(id);
     setProposals((prev) => prev.map((p, idx) => (idx + 1 === id ? updatedProposal : p)));
   };
@@ -122,46 +123,54 @@ const MultiSignPanel: React.FC<MultiSignPanelProps> = () => {
   const filteredProposals = hideExecuted ? proposals.filter((p) => !p.executed) : proposals;
 
   return (
-    <Card>
+    <Card elevation={3}>
       <CardContent>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Typography variant="h5" gutterBottom>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+          <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
             Proposals Panel
           </Typography>
           <RefreshButton onClick={() => setRefetch(true)} loading={isLoading} />
         </Box>
 
-        <Box sx={{ mb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <FormControlLabel control={<Checkbox checked={hideExecuted} onChange={(e) => setHideExecuted(e.target.checked)} />} label="Hide executed transactions" />
+        <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center', bgcolor: 'background.paper', p: 2, borderRadius: 1 }}>
+          <FormControlLabel 
+            control={<Checkbox checked={hideExecuted} onChange={(e) => setHideExecuted(e.target.checked)} color="primary" />} 
+            label="Hide executed transactions" 
+          />
           <Box>
-            <Typography sx={{ display: 'inline-block', mx: 1 }} color="text.secondary">
-              Total Proposals: {actionCounter?.toString() || 0}
-            </Typography>
-            <Typography sx={{ display: 'inline-block', mx: 1 }} color="text.secondary">
-              Required Approvals: {requiredApprovals?.toString() || 0}
-            </Typography>
+            <Chip 
+              label={`Total Proposals: ${actionCounter?.toString() || 0}`}
+              color="primary"
+              variant="outlined"
+              sx={{ mr: 1 }}
+            />
+            <Chip 
+              label={`Required Approvals: ${requiredApprovals?.toString() || 0}`}
+              color="secondary"
+              variant="outlined"
+            />
           </Box>
         </Box>
 
-        <Divider sx={{ my: 2 }} />
-
         {isLoading ? (
-          <Box sx={{ textAlign: 'center', mt: 2 }}>
+          <Box sx={{ textAlign: 'center', mt: 4, mb: 4 }}>
             <CircularProgress />
           </Box>
         ) : filteredProposals.length === 0 ? (
-          <Typography>No proposals available.</Typography>
+          <Box sx={{ textAlign: 'center', p: 4, bgcolor: 'background.paper', borderRadius: 1 }}>
+            <Typography variant="h6" color="text.secondary">No proposals available.</Typography>
+          </Box>
         ) : (
-          <TableContainer component={Paper}>
+          <TableContainer component={Paper} elevation={2}>
             <Table>
               <TableHead>
-                <TableRow>
+                <TableRow sx={{ bgcolor: 'background.default' }}>
                   <TableCell />
-                  <TableCell sx={{ textAlign: 'center' }}>ID</TableCell>
-                  <TableCell sx={{ textAlign: 'center' }}>Action Type</TableCell>
-                  <TableCell sx={{ textAlign: 'center' }}>Approvals</TableCell>
-                  <TableCell sx={{ textAlign: 'center' }}>Executed</TableCell>
-                  <TableCell sx={{ textAlign: 'center' }}>Actions</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold', textAlign: 'center' }}>ID</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold', textAlign: 'center' }}>Action Type</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold', textAlign: 'center' }}>Approvals</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold', textAlign: 'center' }}>Status</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold', textAlign: 'center' }}>Actions</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -173,26 +182,77 @@ const MultiSignPanel: React.FC<MultiSignPanelProps> = () => {
 
                   return (
                     <Fragment key={actionId}>
-                      <TableRow>
+                      <TableRow 
+                        sx={{ 
+                          '&:hover': { bgcolor: 'action.hover' },
+                          bgcolor: isExpanded ? 'action.selected' : 'inherit'
+                        }}
+                      >
                         <TableCell>
                           <IconButton size="small" onClick={() => toggleRow(actionId)}>
                             {isExpanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
                           </IconButton>
                         </TableCell>
-                        <TableCell sx={{ textAlign: 'center' }}>{actionId}</TableCell>
-                        <TableCell sx={{ textAlign: 'center' }}>{ACTION_TYPE[proposal.actionType]}</TableCell>
-                        <TableCell sx={{ textAlign: 'center' }}>{proposal.approvals?.toString()}</TableCell>
-                        <TableCell sx={{ textAlign: 'center' }}>{isExecuted ? <CheckCircleIcon color="success" /> : <CancelIcon color="error" />}</TableCell>
                         <TableCell sx={{ textAlign: 'center' }}>
-                          <Box sx={{ display: 'flex', gap: 1 }}>
+                          <Chip label={actionId} size="small" />
+                        </TableCell>
+                        <TableCell sx={{ textAlign: 'center' }}>
+                          <Chip 
+                            label={ACTION_TYPE[proposal.actionType]} 
+                            color="primary" 
+                            variant="outlined"
+                            size="small"
+                          />
+                        </TableCell>
+                        <TableCell sx={{ textAlign: 'center' }}>
+                          <Chip 
+                            label={`${proposal.approvals?.toString() || 0} / ${requiredApprovals?.toString() || 0}`}
+                            color={canExecute ? "success" : "default"}
+                            size="small"
+                          />
+                        </TableCell>
+                        <TableCell sx={{ textAlign: 'center' }}>
+                          {isExecuted ? (
+                            <Chip 
+                              icon={<CheckCircleIcon />} 
+                              label="Executed" 
+                              color="success" 
+                              size="small"
+                            />
+                          ) : (
+                            <Chip 
+                              icon={<CancelIcon />} 
+                              label="Pending" 
+                              color="warning"
+                              size="small"
+                            />
+                          )}
+                        </TableCell>
+                        <TableCell sx={{ textAlign: 'center' }}>
+                          <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
                             {!isExecuted && (
                               <>
-                                <IconButton color="primary" onClick={() => handleApproveAction(actionId)}>
-                                  <CheckCircleIcon />
-                                </IconButton>
-                                <IconButton color="secondary" onClick={() => handleExecuteAction(actionId)} disabled={!canExecute}>
-                                  <PlayCircleIcon />
-                                </IconButton>
+                                <Tooltip title="Approve Action">
+                                  <IconButton 
+                                    color="primary" 
+                                    onClick={() => handleApproveAction(actionId)}
+                                    size="small"
+                                  >
+                                    <CheckCircleIcon />
+                                  </IconButton>
+                                </Tooltip>
+                                <Tooltip title={canExecute ? "Execute Action" : "Needs more approvals"}>
+                                  <span>
+                                    <IconButton 
+                                      color="secondary" 
+                                      onClick={() => handleExecuteAction(actionId)} 
+                                      disabled={!canExecute}
+                                      size="small"
+                                    >
+                                      <PlayCircleIcon />
+                                    </IconButton>
+                                  </span>
+                                </Tooltip>
                               </>
                             )}
                           </Box>
@@ -201,20 +261,22 @@ const MultiSignPanel: React.FC<MultiSignPanelProps> = () => {
                       <TableRow>
                         <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={6}>
                           <Collapse in={isExpanded} timeout="auto" unmountOnExit>
-                            <Box sx={{ margin: 2 }}>
-                              <Typography variant="subtitle1" gutterBottom>
+                            <Box sx={{ m: 3, bgcolor: 'background.paper', p: 2, borderRadius: 1 }}>
+                              <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 'bold', color: 'primary.main' }}>
                                 Details:
                               </Typography>
-                              <Grid container spacing={1}>
+                              <Grid container spacing={2}>
                                 {proposal.newHourlyRewardRate && proposal.newHourlyRewardRate !== 0n ? (
                                   <Grid item xs={12}>
-                                    <Typography variant="body2">New Hourly Reward Rate: {ethers.formatEther(proposal?.newHourlyRewardRate)}</Typography>
+                                    <Typography variant="body2">
+                                      <strong>New Hourly Reward Rate:</strong> {ethers.formatEther(proposal?.newHourlyRewardRate)}
+                                    </Typography>
                                   </Grid>
                                 ) : null}
                                 {ethers.ZeroAddress !== proposal.pairToAdd && (
                                   <Grid item xs={12}>
                                     <Typography variant="body2">
-                                      {proposal.actionType.toString() !== '4' ? 'Pair to Add: ' : 'Original Signer: '}
+                                      <strong>{proposal.actionType.toString() !== '4' ? 'Pair to Add: ' : 'Original Signer: '}</strong>
                                       {truncateAddress(proposal.pairToAdd)}
                                     </Typography>
                                   </Grid>
@@ -222,44 +284,58 @@ const MultiSignPanel: React.FC<MultiSignPanelProps> = () => {
                                 {ethers.ZeroAddress !== proposal.pairToRemove && (
                                   <Grid item xs={12}>
                                     <Typography variant="body2">
-                                      {proposal.actionType.toString() !== '4' ? 'Pair to Remove: ' : 'New Signer: '}
+                                      <strong>{proposal.actionType.toString() !== '4' ? 'Pair to Remove: ' : 'New Signer: '}</strong>
                                       {truncateAddress(proposal.pairToRemove)}
                                     </Typography>
                                   </Grid>
                                 )}
                                 {proposal.pairNameToAdd && (
                                   <Grid item xs={12}>
-                                    <Typography variant="body2">Pair Name: {proposal.pairNameToAdd}</Typography>
+                                    <Typography variant="body2">
+                                      <strong>Pair Name:</strong> {proposal.pairNameToAdd}
+                                    </Typography>
                                   </Grid>
                                 )}
                                 {proposal.platformToAdd && (
                                   <Grid item xs={12}>
-                                    <Typography variant="body2">Platform: {proposal.platformToAdd}</Typography>
+                                    <Typography variant="body2">
+                                      <strong>Platform:</strong> {proposal.platformToAdd}
+                                    </Typography>
                                   </Grid>
                                 )}
                                 {proposal.weightToAdd !== 0n && (
                                   <Grid item xs={12}>
-                                    <Typography variant="body2">Weight: {ethers.formatEther(proposal.weightToAdd.toString())}</Typography>
+                                    <Typography variant="body2">
+                                      <strong>Weight:</strong> {ethers.formatEther(proposal.weightToAdd.toString())}
+                                    </Typography>
                                   </Grid>
                                 )}
                                 {ethers.ZeroAddress !== proposal.recipient && (
                                   <Grid item xs={12}>
-                                    <Typography variant="body2">Recipient: {truncateAddress(proposal.recipient)}</Typography>
+                                    <Typography variant="body2">
+                                      <strong>Recipient:</strong> {truncateAddress(proposal.recipient)}
+                                    </Typography>
                                   </Grid>
                                 )}
                                 {proposal.withdrawAmount !== 0n && (
                                   <Grid item xs={12}>
-                                    <Typography variant="body2">Withdraw Amount: {ethers.formatEther(proposal.withdrawAmount.toString())}</Typography>
+                                    <Typography variant="body2">
+                                      <strong>Withdraw Amount:</strong> {ethers.formatEther(proposal.withdrawAmount.toString())}
+                                    </Typography>
                                   </Grid>
                                 )}
                                 {proposal.pairs?.length > 0 && (
                                   <Grid item xs={12}>
-                                    <Typography variant="body2">Pairs: {proposal.pairs.map((pair) => truncateAddress(pair)).join(', ')}</Typography>
+                                    <Typography variant="body2">
+                                      <strong>Pairs:</strong> {proposal.pairs.map((pair) => truncateAddress(pair)).join(', ')}
+                                    </Typography>
                                   </Grid>
                                 )}
                                 {proposal.weights?.length > 0 && (
                                   <Grid item xs={12}>
-                                    <Typography variant="body2">Weights: {proposal.weights.map((weight) => ethers.formatEther(weight.toString())).join(', ')}</Typography>
+                                    <Typography variant="body2">
+                                      <strong>Weights:</strong> {proposal.weights.map((weight) => ethers.formatEther(weight.toString())).join(', ')}
+                                    </Typography>
                                   </Grid>
                                 )}
                               </Grid>
