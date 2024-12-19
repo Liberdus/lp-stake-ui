@@ -44,7 +44,12 @@ const StakingModal: React.FC<StakingModalProps> = ({ selectedPair, isModalOpen, 
 
   const handleUnstake = async () => {
     if (!selectedPair || unstakePercent === 0) return;
-    await unstake(selectedPair.lpToken, ((unstakePercent * selectedPair.myShare * selectedPair.tvl) / 10000).toString());
+    // Calculate staked amount
+    const stakedAmount = (selectedPair.myShare * selectedPair.tvl) / 100;
+    // Calculate unstake amount and floor it to avoid rounding errors
+    const unstakeAmount = Math.floor((unstakePercent * stakedAmount) / 100 * 1e18) / 1e18;
+    // console.log(unstakeAmount);
+    await unstake(selectedPair.lpToken, unstakeAmount.toString());
     setIsModalOpen(false);
     setRefetch(true);
   };
@@ -70,6 +75,11 @@ const StakingModal: React.FC<StakingModalProps> = ({ selectedPair, isModalOpen, 
   }, [selectedPair, signer]);
 
   if (!selectedPair || !tokenInfo) return null;
+
+  // Calculate staked amount for display
+  const stakedAmount = (selectedPair.myShare * selectedPair.tvl) / 100;
+  // Calculate unstake amount and floor it to avoid rounding errors
+  const unstakeAmount = Math.floor((unstakePercent * stakedAmount) / 100 * 1e18) / 1e18;
 
   return (
     <Dialog open={isModalOpen} onClose={() => setIsModalOpen(false)} maxWidth="sm" fullWidth PaperProps={{ elevation: 0 }}>
@@ -177,7 +187,7 @@ const StakingModal: React.FC<StakingModalProps> = ({ selectedPair, isModalOpen, 
               <Box sx={{ display: 'flex', alignItems: 'center' }}>
                 <UnstakeIcon sx={{ mr: 1, color: 'primary.main' }} />
                 <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                  Unstake {unstakePercent}% ({((unstakePercent * selectedPair?.myShare * selectedPair?.tvl) / 10000).toFixed(2)} {tokenInfo?.symbol})
+                  Unstake {unstakePercent}% ({unstakeAmount.toFixed(4)} {tokenInfo?.symbol})
                 </Typography>
               </Box>
               <Button 
