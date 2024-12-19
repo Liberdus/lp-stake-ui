@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useAtom } from 'jotai';
 import { userInfoAtom } from '@/store/userInfo';
 import { useNavigate } from 'react-router-dom';
-import { Container, Typography, Grid, Stack, Button, Modal } from '@mui/material';
+import { Container, Typography, Grid, Stack, Button, Modal, Box } from '@mui/material';
 import MultiSignPanel from './components/MultiSignPanel';
 import UpdatePairWeightModal from './components/UpdatePairWeightModal';
 import RemovePairModal from './components/RemovePairModal';
@@ -13,6 +13,7 @@ import WithdrawalModal from './components/WithdrawalModal';
 import { refetchAtom } from '@/store/refetch';
 import ModalBox from '@/components/ModalBox';
 import { useAuth } from '@/providers/AuthProvider';
+import InfoCard from './components/InfoCard';
 
 const Admin: React.FC = () => {
   const navigate = useNavigate();
@@ -69,7 +70,11 @@ const Admin: React.FC = () => {
             </Stack>
           </Grid>
         </Grid>
+        <Box sx={{ mt: 4 }}>
+          <InfoCard />
+        </Box>
       </Container>
+
       <HourlyRateModal open={modalOpen === 1} onClose={onClose} />
       <AddPairModal open={modalOpen === 2} onClose={onClose} />
       <RemovePairModal open={modalOpen === 3} onClose={onClose} />

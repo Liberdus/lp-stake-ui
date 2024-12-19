@@ -18,6 +18,7 @@ const REWARD_TOKEN_ADDRESS = import.meta.env.VITE_REWARD_TOKEN_ADDRESS as string
 
 interface ContractContextType {
   contract: ethers.Contract | null;
+  rewardTokenContract: ethers.Contract | null;
   isLoading: boolean;
   error: Error | null;
   // Core staking functions
@@ -82,6 +83,7 @@ interface ContractContextType {
 
 const ContractContext = createContext<ContractContextType>({
   contract: null,
+  rewardTokenContract: null,
   isLoading: true,
   error: null,
   stake: async () => {},
@@ -558,7 +560,7 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
   const getSigners = async () => {
     try {
       if (!contract) throw new Error('Contract not initialized');
-      return await contract.signers();
+      return await contract.getSigners();
     } catch (err: any) {
       const errorMessage = err.reason || 'Failed to get signers';
       setError(new Error(errorMessage));
@@ -667,6 +669,7 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
     <ContractContext.Provider
       value={{
         contract,
+        rewardTokenContract,
         isLoading,
         error,
         // Core staking functions
