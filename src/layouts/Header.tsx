@@ -1,16 +1,19 @@
 import { ConnectButton } from '@rainbow-me/rainbowkit';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import logo from '../assets/logo.png';
-import { AppBar, Toolbar, Typography, Box, Button, Container, useTheme, useMediaQuery, IconButton, Menu, MenuItem } from '@mui/material';
+import { AppBar, Toolbar, Typography, Box, Button, Container, useTheme, useMediaQuery, IconButton, Menu, MenuItem, Fade } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import { useState } from 'react';
 import { colorModeAtom } from '@/store/colorMode';
 import { useAtom } from 'jotai';
 import LightModeIcon from '@mui/icons-material/LightModeOutlined';
 import BedtimeIcon from '@mui/icons-material/BedtimeOutlined';
+import HomeIcon from '@mui/icons-material/Home';
+import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 
 const Header: React.FC = () => {
   const theme = useTheme();
+  const location = useLocation();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
@@ -29,20 +32,39 @@ const Header: React.FC = () => {
   };
 
   return (
-    <AppBar position="static" color="default" elevation={2}>
+    <AppBar 
+      position="sticky" 
+      color="default" 
+      elevation={0}
+      sx={{
+        borderBottom: `1px solid ${theme.palette.divider}`,
+        backdropFilter: 'blur(8px)',
+        backgroundColor: theme.palette.mode === 'light' 
+          ? 'rgba(255, 255, 255, 0.8)'
+          : 'rgba(0, 0, 0, 0.8)'
+      }}
+    >
       <Container maxWidth="lg">
         <Toolbar
           sx={{
             display: 'flex',
             justifyContent: 'space-between',
-            py: { xs: 1, md: 1 },
+            py: { xs: 1.5, md: 2 },
           }}
         >
           <Box
+            component={Link}
+            to="/"
             sx={{
               display: 'flex',
               alignItems: 'center',
-              gap: 1,
+              gap: 1.5,
+              textDecoration: 'none',
+              color: 'inherit',
+              '&:hover': {
+                opacity: 0.8,
+              },
+              transition: 'opacity 0.2s'
             }}
           >
             <Box
@@ -50,17 +72,25 @@ const Header: React.FC = () => {
               src={logo}
               alt="Liberdus LP Staking"
               sx={{
-                width: { xs: 28, sm: 32, md: 40 },
-                height: { xs: 28, sm: 32, md: 40 },
-                transition: 'width 0.2s, height 0.2s'
+                width: { xs: 32, sm: 36, md: 44 },
+                height: { xs: 32, sm: 36, md: 44 },
+                transition: 'all 0.2s ease-in-out',
+                '&:hover': {
+                  transform: 'scale(1.05)'
+                }
               }}
             />
             <Typography
-              variant={isMobile ? "subtitle1" : "h6"}
+              variant={isMobile ? "h6" : "h5"}
               sx={{
                 display: { xs: 'none', sm: 'block' },
-                fontWeight: 'bold',
-                whiteSpace: 'nowrap'
+                fontWeight: 700,
+                whiteSpace: 'nowrap',
+                background: theme.palette.mode === 'dark' 
+                  ? 'linear-gradient(45deg, #fff 30%, #ccc 90%)'
+                  : 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent'
               }}
             >
               Liber LP Staking
@@ -77,6 +107,12 @@ const Header: React.FC = () => {
                   color="inherit"
                   aria-label="menu"
                   onClick={handleMenu}
+                  sx={{
+                    transition: 'transform 0.2s',
+                    '&:hover': {
+                      transform: 'rotate(90deg)'
+                    }
+                  }}
                 >
                   <MenuIcon />
                 </IconButton>
@@ -85,8 +121,9 @@ const Header: React.FC = () => {
                 anchorEl={anchorEl}
                 open={open}
                 onClose={handleClose}
+                TransitionComponent={Fade}
                 anchorOrigin={{
-                  vertical: 'top',
+                  vertical: 'bottom',
                   horizontal: 'right',
                 }}
                 transformOrigin={{
@@ -94,18 +131,64 @@ const Header: React.FC = () => {
                   horizontal: 'right',
                 }}
               >
-                <MenuItem component={Link} to="/" onClick={handleClose}>Home</MenuItem>
-                <MenuItem component={Link} to="/admin" onClick={handleClose}>Admin Panel</MenuItem>
+                <MenuItem component={Link} to="/" onClick={handleClose} selected={location.pathname === '/'}>
+                  <HomeIcon sx={{ mr: 1 }} /> Home
+                </MenuItem>
+                <MenuItem component={Link} to="/admin" onClick={handleClose} selected={location.pathname === '/admin'}>
+                  <AdminPanelSettingsIcon sx={{ mr: 1 }} /> Admin Panel
+                </MenuItem>
               </Menu>
             </>
           ) : (
             <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-              <Button component={Link} to="/" color="inherit">Home</Button>
-              <Button component={Link} to="/admin" color="inherit">Admin Panel</Button>
-              <ConnectButton accountStatus="avatar" chainStatus="icon" />
-              <Button onClick={toggleColorMode}>
-                {colorTheme === 'light' ? <LightModeIcon /> : <BedtimeIcon />}
+              <Button 
+                component={Link} 
+                to="/" 
+                color="inherit"
+                startIcon={<HomeIcon />}
+                sx={{
+                  borderRadius: 2,
+                  px: 2,
+                  backgroundColor: location.pathname === '/' ? 'action.selected' : 'transparent',
+                  '&:hover': {
+                    backgroundColor: 'action.hover',
+                    transform: 'translateY(-2px)'
+                  },
+                  transition: 'transform 0.2s'
+                }}
+              >
+                Home
               </Button>
+              <Button 
+                component={Link} 
+                to="/admin" 
+                color="inherit"
+                startIcon={<AdminPanelSettingsIcon />}
+                sx={{
+                  borderRadius: 2,
+                  px: 2,
+                  backgroundColor: location.pathname === '/admin' ? 'action.selected' : 'transparent',
+                  '&:hover': {
+                    backgroundColor: 'action.hover',
+                    transform: 'translateY(-2px)'
+                  },
+                  transition: 'transform 0.2s'
+                }}
+              >
+                Admin Panel
+              </Button>
+              <ConnectButton accountStatus="avatar" chainStatus="icon" />
+              <IconButton 
+                onClick={toggleColorMode}
+                sx={{
+                  transition: 'transform 0.3s ease-in-out',
+                  '&:hover': {
+                    transform: 'rotate(180deg)'
+                  }
+                }}
+              >
+                {colorTheme === 'light' ? <LightModeIcon /> : <BedtimeIcon />}
+              </IconButton>
             </Box>
           )}
         </Toolbar>
