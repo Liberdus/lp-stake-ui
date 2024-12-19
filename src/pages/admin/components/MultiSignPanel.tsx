@@ -1,7 +1,26 @@
 import { useContract } from '@/providers/ContractProvider';
 import { Action } from '@/types';
 import { truncateAddress } from '@/utils';
-import { Box, Card, CardContent, CircularProgress, Collapse, Divider, Grid, IconButton, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from '@mui/material';
+import {
+  Box,
+  Card,
+  CardContent,
+  CircularProgress,
+  Collapse,
+  Divider,
+  Grid,
+  IconButton,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Typography,
+  FormControlLabel,
+  Checkbox,
+} from '@mui/material';
 import { ethers } from 'ethers';
 import { Fragment, useEffect, useState } from 'react';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
@@ -22,6 +41,7 @@ const MultiSignPanel: React.FC<MultiSignPanelProps> = () => {
   const [proposals, setProposals] = useState<Action[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set());
+  const [hideExecuted, setHideExecuted] = useState<boolean>(false);
   const [refetch, setRefetch] = useAtom(refetchAtom);
   const { contract, approveAction, executeAction, getActionCounter, getRequiredApprovals, getActions, getActionPairs, getActionWeights } = useContract();
 
@@ -95,6 +115,8 @@ const MultiSignPanel: React.FC<MultiSignPanelProps> = () => {
     setExpandedRows(newExpandedRows);
   };
 
+  const filteredProposals = hideExecuted ? proposals.filter((p) => !p.executed) : proposals;
+
   return (
     <Card>
       <CardContent>
@@ -102,13 +124,16 @@ const MultiSignPanel: React.FC<MultiSignPanelProps> = () => {
           Proposals Panel
         </Typography>
 
-        <Box sx={{ mb: 2, textAlign: 'right' }}>
-          <Typography sx={{ display: 'inline-block', mx: 1 }} color="text.secondary">
-            Total Proposals: {actionCounter?.toString() || 0}
-          </Typography>
-          <Typography sx={{ display: 'inline-block', mx: 1 }} color="text.secondary">
-            Required Approvals: {requiredApprovals?.toString() || 0}
-          </Typography>
+        <Box sx={{ mb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <FormControlLabel control={<Checkbox checked={hideExecuted} onChange={(e) => setHideExecuted(e.target.checked)} />} label="Hide executed transactions" />
+          <Box>
+            <Typography sx={{ display: 'inline-block', mx: 1 }} color="text.secondary">
+              Total Proposals: {actionCounter?.toString() || 0}
+            </Typography>
+            <Typography sx={{ display: 'inline-block', mx: 1 }} color="text.secondary">
+              Required Approvals: {requiredApprovals?.toString() || 0}
+            </Typography>
+          </Box>
         </Box>
 
         <Divider sx={{ my: 2 }} />
@@ -117,7 +142,7 @@ const MultiSignPanel: React.FC<MultiSignPanelProps> = () => {
           <Box sx={{ textAlign: 'center', mt: 2 }}>
             <CircularProgress />
           </Box>
-        ) : proposals.length === 0 ? (
+        ) : filteredProposals.length === 0 ? (
           <Typography>No proposals available.</Typography>
         ) : (
           <TableContainer component={Paper}>
@@ -133,7 +158,7 @@ const MultiSignPanel: React.FC<MultiSignPanelProps> = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {proposals.map((proposal, index) => {
+                {filteredProposals.map((proposal, index) => {
                   const actionId = index + 1;
                   const isExecuted = proposal.executed;
                   const canExecute = !isExecuted && requiredApprovals && proposal.approvals && proposal.approvals >= requiredApprovals;
