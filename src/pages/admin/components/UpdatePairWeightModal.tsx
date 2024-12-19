@@ -1,6 +1,6 @@
 import ModalBox from '@/components/ModalBox';
 import { useContract } from '@/providers/ContractProvider';
-import { Box, Button, Card, CardContent, Modal, TextField, Typography } from '@mui/material';
+import { Alert, Box, Button, Card, CardActions, CardContent, Modal, Stack, TextField, Typography } from '@mui/material';
 import { ethers } from 'ethers';
 import { useEffect, useState } from 'react';
 
@@ -10,10 +10,10 @@ interface UpdatePairWeightModalProps {
 }
 
 const UpdatePairWeightModal: React.FC<UpdatePairWeightModalProps> = ({ open, onClose }) => {
-  // New states for update weights
   const [updatePairAddresses, setUpdatePairAddresses] = useState<string[]>(['']);
   const [updatePairWeights, setUpdatePairWeights] = useState<string[]>(['0']);
   const [maxWeight, setMaxWeight] = useState<number>();
+  const [error, setError] = useState<string>('');
 
   const { proposeUpdatePairWeights, getMaxWeight } = useContract();
 
@@ -39,7 +39,7 @@ const UpdatePairWeightModal: React.FC<UpdatePairWeightModalProps> = ({ open, onC
     // Validate addresses
     const validAddresses = updatePairAddresses.every((addr) => ethers.isAddress(addr));
     if (!validAddresses) {
-      alert('Invalid LP token address format');
+      setError('Invalid LP token address format');
       return;
     }
 
@@ -48,63 +48,83 @@ const UpdatePairWeightModal: React.FC<UpdatePairWeightModalProps> = ({ open, onC
       const validWeights = updatePairWeights.every((weight) => Number(weight) <= Number(maxWeight) && Number(weight) >= 0);
 
       if (!validWeights) {
-        alert(`Weights must be between 0 and ${maxWeight}`);
+        setError(`Weights must be between 0 and ${maxWeight}`);
         return;
       }
     }
 
-    await proposeUpdatePairWeights(updatePairAddresses, updatePairWeights);
-    onClose();
+    try {
+      await proposeUpdatePairWeights(updatePairAddresses, updatePairWeights);
+      onClose();
+    } catch (err) {
+      setError('Failed to propose weight updates. Please try again.');
+    }
   };
 
   return (
     <Modal open={open} onClose={onClose}>
       <ModalBox>
-        <Card>
+        <Card sx={{ minWidth: 600 }}>
           <CardContent>
-            <Typography variant="h5" gutterBottom>
+            <Typography variant="h5" gutterBottom sx={{ mb: 3 }}>
               Update Pair Weights
             </Typography>
-            {updatePairAddresses.map((address, index) => (
-              <Box key={index} sx={{ display: 'flex', gap: 2, mb: 2 }}>
-                <TextField
-                  fullWidth
-                  value={address}
-                  onChange={(e) => {
-                    const newAddresses = [...updatePairAddresses];
-                    newAddresses[index] = e.target.value;
-                    setUpdatePairAddresses(newAddresses);
-                  }}
-                  placeholder="LP Token Address"
-                />
-                <TextField
-                  type="number"
-                  sx={{ width: '200px' }}
-                  value={updatePairWeights[index]}
-                  onChange={(e) => {
-                    const newWeights = [...updatePairWeights];
-                    newWeights[index] = e.target.value;
-                    setUpdatePairWeights(newWeights);
-                  }}
-                  placeholder="Weight"
-                />
-                <Button variant="outlined" color="error" onClick={() => handleRemovePairWeight(index)} disabled={updatePairAddresses.length === 1}>
-                  Remove
-                </Button>
-              </Box>
-            ))}
-            <Typography variant="body2" sx={{ mt: 2, textAlign: 'right' }}>
-              Max Weight: {maxWeight}
-            </Typography>
-            <Box sx={{ display: 'flex', gap: 2 }}>
-              <Button variant="outlined" onClick={handleAddPairWeight}>
-                Add Pair
-              </Button>
-              <Button variant="contained" onClick={handleProposeUpdateWeights} disabled={updatePairAddresses.some((addr) => !addr) || updatePairWeights.some((w) => w === '0')}>
-                Propose Weight Updates
-              </Button>
-            </Box>
+
+            <Stack spacing={3}>
+              {error && <Alert severity="error">{error}</Alert>}
+
+              {updatePairAddresses.map((address, index) => (
+                <Box key={index} sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+                  <TextField
+                    fullWidth
+                    label="LP Token Address"
+                    value={address}
+                    onChange={(e) => {
+                      const newAddresses = [...updatePairAddresses];
+                      newAddresses[index] = e.target.value;
+                      setUpdatePairAddresses(newAddresses);
+                    }}
+                    variant="outlined"
+                    helperText="Enter the LP token address"
+                  />
+                  <TextField
+                    type="number"
+                    label="Weight"
+                    sx={{ width: '200px' }}
+                    value={updatePairWeights[index]}
+                    onChange={(e) => {
+                      const newWeights = [...updatePairWeights];
+                      newWeights[index] = e.target.value;
+                      setUpdatePairWeights(newWeights);
+                    }}
+                    variant="outlined"
+                    helperText={`Max: ${maxWeight}`}
+                    InputProps={{
+                      inputProps: { min: 0, max: maxWeight, step: '0.000001' },
+                    }}
+                  />
+                  <Button variant="outlined" color="error" onClick={() => handleRemovePairWeight(index)} disabled={updatePairAddresses.length === 1} sx={{ height: 56 }}>
+                    Remove
+                  </Button>
+                </Box>
+              ))}
+            </Stack>
           </CardContent>
+
+          <CardActions sx={{ p: 2, justifyContent: 'space-between' }}>
+            <Button variant="outlined" onClick={handleAddPairWeight} startIcon={<span>+</span>}>
+              Add Another Pair
+            </Button>
+            <Button
+              variant="contained"
+              onClick={handleProposeUpdateWeights}
+              disabled={updatePairAddresses.some((addr) => !addr) || updatePairWeights.some((w) => w === '0')}
+              color="warning"
+              size="large"
+            >
+              Propose Weight Updates
+            </Button>
+          </CardActions>
         </Card>
       </ModalBox>
     </Modal>

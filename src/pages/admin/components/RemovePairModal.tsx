@@ -1,6 +1,6 @@
 import ModalBox from '@/components/ModalBox';
 import { useContract } from '@/providers/ContractProvider';
-import { Button, Card, CardActions, CardContent, Modal, TextField, Typography } from '@mui/material';
+import { Alert, Button, Card, CardActions, CardContent, Modal, Stack, TextField, Typography } from '@mui/material';
 import { ethers } from 'ethers';
 import { useState } from 'react';
 
@@ -11,31 +11,62 @@ interface RemovePairModalProps {
 
 const RemovePairModal: React.FC<RemovePairModalProps> = ({ open, onClose }) => {
   const [removePairAddress, setRemovePairAddress] = useState<string>('');
+  const [error, setError] = useState<string>('');
   const { proposeRemovePair } = useContract();
 
-  const handleProposeRemovePair = async () => {
-    if (removePairAddress) {
-      if (!ethers.isAddress(removePairAddress)) {
-        alert('Invalid LP token address format');
-        return;
-      }
-      await proposeRemovePair(removePairAddress);
+  const validateInput = (): boolean => {
+    if (!removePairAddress) {
+      setError('Please enter an LP token address');
+      return false;
     }
-    onClose();
+    if (!ethers.isAddress(removePairAddress)) {
+      setError('Invalid LP token address format');
+      return false;
+    }
+    setError('');
+    return true;
+  };
+
+  const handleProposeRemovePair = async () => {
+    if (!validateInput()) return;
+
+    try {
+      await proposeRemovePair(removePairAddress);
+      onClose();
+    } catch (err) {
+      setError('Failed to propose pair removal. Please try again.');
+    }
   };
 
   return (
     <Modal open={open} onClose={onClose}>
       <ModalBox>
-        <Card>
+        <Card sx={{ minWidth: 400 }}>
           <CardContent>
-            <Typography variant="h5" gutterBottom>
+            <Typography variant="h5" gutterBottom sx={{ mb: 3 }}>
               Remove Pair
             </Typography>
-            <TextField fullWidth value={removePairAddress} onChange={(e) => setRemovePairAddress(e.target.value)} placeholder="LP Token Address to Remove" margin="normal" />
+
+            <Stack spacing={2}>
+              {error && (
+                <Alert severity="error" sx={{ mb: 2 }}>
+                  {error}
+                </Alert>
+              )}
+
+              <TextField
+                label="LP Token Address"
+                value={removePairAddress}
+                onChange={(e) => setRemovePairAddress(e.target.value)}
+                variant="outlined"
+                fullWidth
+                helperText="Enter the LP token address to remove"
+              />
+            </Stack>
           </CardContent>
-          <CardActions>
-            <Button fullWidth variant="contained" color="error" onClick={handleProposeRemovePair} disabled={!removePairAddress}>
+
+          <CardActions sx={{ p: 2 }}>
+            <Button fullWidth variant="contained" color="error" onClick={handleProposeRemovePair} size="large" disabled={!removePairAddress}>
               Propose Remove Pair
             </Button>
           </CardActions>
