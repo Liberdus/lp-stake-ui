@@ -220,12 +220,12 @@ const MultiSignPanel: React.FC<MultiSignPanelProps> = () => {
                                     <Typography variant="body2">Withdraw Amount: {ethers.formatEther(proposal.withdrawAmount.toString())}</Typography>
                                   </Grid>
                                 )}
-                                {proposal.pairs.length > 0 && (
+                                {proposal.pairs?.length > 0 && (
                                   <Grid item xs={12}>
                                     <Typography variant="body2">Pairs: {proposal.pairs.map((pair) => truncateAddress(pair)).join(', ')}</Typography>
                                   </Grid>
                                 )}
-                                {proposal.weights.length > 0 && (
+                                {proposal.weights?.length > 0 && (
                                   <Grid item xs={12}>
                                     <Typography variant="body2">Weights: {proposal.weights.map((weight) => ethers.formatEther(weight.toString())).join(', ')}</Typography>
                                   </Grid>

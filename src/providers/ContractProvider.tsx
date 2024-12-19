@@ -229,10 +229,21 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
   // Core staking functions
   const stake = async (lpToken: string, amount: string) => {
     try {
-      if (!contract) throw new Error('Contract not initialized');
+      if (!contract || !signer) throw new Error('Contract not initialized');
       const tokenContract = new ethers.Contract(lpToken, ERC20_ABI, signer);
-      await tokenContract.approve(STAKING_CONTRACT_ADDRESS, ethers.parseEther(amount));
-      const tx = await contract.stake(lpToken, ethers.parseEther(amount));
+      
+      // Check allowance first
+      const currentAllowance = await tokenContract.allowance(await signer.getAddress(), STAKING_CONTRACT_ADDRESS);
+      const amountInWei = ethers.parseEther(amount);
+      
+      // Only approve if needed
+      if (currentAllowance < amountInWei) {
+        const approveTx = await tokenContract.approve(STAKING_CONTRACT_ADDRESS, amountInWei);
+        await approveTx.wait();
+      }
+
+      // Proceed with staking
+      const tx = await contract.stake(lpToken, amountInWei);
       await tx.wait();
     } catch (err: any) {
       const errorMessage = err.reason || 'Failed to stake';
