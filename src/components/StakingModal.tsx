@@ -4,7 +4,7 @@ import { refetchAtom } from '@/store/refetch';
 import { PairInfo, TokenInfo } from '@/types';
 import { Button, Paper } from '@mui/material';
 import { Box, Typography, Slider, Stack, DialogContent, Tab, Divider } from '@mui/material';
-import { Dialog, Tabs } from '@mui/material';
+import { Dialog, Tabs, TextField } from '@mui/material';
 import { ethers } from 'ethers';
 import { useAtom } from 'jotai';
 import { SetStateAction, useEffect, useState } from 'react';
@@ -28,6 +28,8 @@ const StakingModal: React.FC<StakingModalProps> = ({ selectedPair, isModalOpen, 
   const [tabValue, setTabValue] = useState(0);
   const [stakePercent, setStakePercent] = useState<number>(100);
   const [unstakePercent, setUnstakePercent] = useState<number>(100);
+  const [stakeAmount, setStakeAmount] = useState<string>('');
+  const [unstakeAmount, setUnstakeAmount] = useState<string>('');
   const [balance, setBalance] = useState<number>(0);
   const [tokenInfo, setTokenInfo] = useState<TokenInfo | null>(null);
   const [pendingRewards, setPendingRewards] = useState<number>(0);
@@ -36,20 +38,20 @@ const StakingModal: React.FC<StakingModalProps> = ({ selectedPair, isModalOpen, 
   const signer = useEthersSigner();
 
   const handleStake = async () => {
-    if (!selectedPair || stakePercent === 0) return;
-    await stake(selectedPair.lpToken, ((stakePercent * balance) / 100).toString());
+    if (!selectedPair) return;
+    const amount = stakeAmount || ((stakePercent * balance) / 100).toString();
+    if (Number(amount) === 0) return;
+    await stake(selectedPair.lpToken, amount);
     setIsModalOpen(false);
     setRefetch(true);
   };
 
   const handleUnstake = async () => {
-    if (!selectedPair || unstakePercent === 0) return;
-    // Calculate staked amount
+    if (!selectedPair) return;
     const stakedAmount = (selectedPair.myShare * selectedPair.tvl) / 100;
-    // Calculate unstake amount and floor it to avoid rounding errors
-    const unstakeAmount = Math.floor((unstakePercent * stakedAmount) / 100 * 1e18) / 1e18;
-    // console.log(unstakeAmount);
-    await unstake(selectedPair.lpToken, unstakeAmount.toString());
+    const amount = unstakeAmount || ((unstakePercent * stakedAmount) / 100).toString();
+    if (Number(amount) === 0) return;
+    await unstake(selectedPair.lpToken, amount);
     setIsModalOpen(false);
     setRefetch(true);
   };
@@ -59,6 +61,42 @@ const StakingModal: React.FC<StakingModalProps> = ({ selectedPair, isModalOpen, 
     await claimRewards(selectedPair.lpToken);
     setIsModalOpen(false);
     setRefetch(true);
+  };
+
+  const handleStakeAmountChange = (value: string) => {
+    if (!value) {
+      setStakeAmount('');
+      setStakePercent(0);
+      return;
+    }
+    const numValue = Number(value);
+    if (isNaN(numValue) || numValue < 0) return;
+    if (numValue > balance) {
+      setStakeAmount(balance.toString());
+      setStakePercent(100);
+      return;
+    }
+    setStakeAmount(value);
+    setStakePercent((numValue * 100 / balance));
+  };
+
+  const handleUnstakeAmountChange = (value: string) => {
+    if (!selectedPair) return;
+    if (!value) {
+      setUnstakeAmount('');
+      setUnstakePercent(0);
+      return;
+    }
+    const numValue = Number(value);
+    if (isNaN(numValue) || numValue < 0) return;
+    const stakedAmount = (selectedPair.myShare * selectedPair.tvl) / 100;
+    if (numValue > stakedAmount) {
+      setUnstakeAmount(stakedAmount.toString());
+      setUnstakePercent(100);
+      return;
+    }
+    setUnstakeAmount(value);
+    setUnstakePercent((numValue * 100 / stakedAmount));
   };
 
   useEffect(() => {
@@ -74,15 +112,23 @@ const StakingModal: React.FC<StakingModalProps> = ({ selectedPair, isModalOpen, 
     fetchData();
   }, [selectedPair, signer]);
 
+  useEffect(() => {
+    if (!balance) return;
+    setStakeAmount(((stakePercent * balance) / 100).toString());
+  }, [stakePercent, balance]);
+
+  useEffect(() => {
+    if (!selectedPair) return;
+    const stakedAmount = (selectedPair.myShare * selectedPair.tvl) / 100;
+    setUnstakeAmount(((unstakePercent * stakedAmount) / 100).toString());
+  }, [unstakePercent, selectedPair]);
+
   if (!selectedPair || !tokenInfo) return null;
 
-  // Calculate staked amount for display
   const stakedAmount = (selectedPair.myShare * selectedPair.tvl) / 100;
-  // Calculate unstake amount and floor it to avoid rounding errors
-  const unstakeAmount = Math.floor((unstakePercent * stakedAmount) / 100 * 1e18) / 1e18;
 
   return (
-    <Dialog open={isModalOpen} onClose={() => setIsModalOpen(false)} maxWidth="sm" fullWidth PaperProps={{ elevation: 0 }}>
+    <Dialog open={isModalOpen} onClose={() => setIsModalOpen(false)} maxWidth="md" fullWidth PaperProps={{ elevation: 0 }}>
       <DialogContent sx={{ p: 0 }}>
         <Paper sx={{ p: 4, borderRadius: 2, position: 'relative' }}>
           <IconButton 
@@ -126,24 +172,43 @@ const StakingModal: React.FC<StakingModalProps> = ({ selectedPair, isModalOpen, 
                   onChange={(_: any, value: number | number[]) => setStakePercent(value as number)} 
                   valueLabelDisplay="auto"
                   valueLabelFormat={(value) => <div>{value}%</div>}
+                  marks={[
+                    { value: 0, label: '0%' },
+                    { value: 25, label: '25%' },
+                    { value: 50, label: '50%' },
+                    { value: 75, label: '75%' },
+                    { value: 100, label: '100%' }
+                  ]}
                   sx={{
                     '& .MuiSlider-thumb': {
-                      width: 24,
-                      height: 24
+                      width: 28,
+                      height: 28
+                    },
+                    '& .MuiSlider-mark': {
+                      width: 8,
+                      height: 8,
+                      borderRadius: '50%'
                     }
                   }}
                 />
               </Box>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', flex: 1, mr: 2 }}>
                   <PercentIcon sx={{ mr: 1, color: 'primary.main' }} />
-                  <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                    Stake {stakePercent}% ({(stakePercent * balance) / 100} {tokenInfo?.symbol})
-                  </Typography>
+                  <TextField
+                    fullWidth
+                    size="medium"
+                    value={stakeAmount}
+                    onChange={(e) => handleStakeAmountChange(e.target.value)}
+                    placeholder="Enter amount"
+                    InputProps={{
+                      endAdornment: <Typography sx={{ ml: 1 }}>{tokenInfo?.symbol}</Typography>
+                    }}
+                  />
                 </Box>
                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
                   <WalletIcon sx={{ mr: 1, color: 'text.secondary' }} />
-                  <Typography variant="body2" color="text.secondary">
+                  <Typography variant="body1" color="text.secondary">
                     Balance: {balance.toFixed(4)} {tokenInfo?.symbol}
                   </Typography>
                 </Box>
@@ -151,15 +216,15 @@ const StakingModal: React.FC<StakingModalProps> = ({ selectedPair, isModalOpen, 
               <Button 
                 variant="contained" 
                 onClick={handleStake} 
-                disabled={selectedPair?.weight === BigInt(0)} 
+                disabled={selectedPair?.weight === BigInt(0) || Number(stakeAmount) === 0} 
                 fullWidth
                 size="large"
                 startIcon={<StakeIcon />}
                 sx={{ 
-                  py: 1.5,
+                  py: 2,
                   textTransform: 'none',
                   fontWeight: 600,
-                  fontSize: '1.1rem',
+                  fontSize: '1.2rem',
                   borderRadius: 2
                 }}
               >
@@ -176,31 +241,59 @@ const StakingModal: React.FC<StakingModalProps> = ({ selectedPair, isModalOpen, 
                   onChange={(_: any, value: number | number[]) => setUnstakePercent(value as number)} 
                   valueLabelDisplay="auto"
                   valueLabelFormat={(value) => <div>{value}%</div>}
+                  marks={[
+                    { value: 0, label: '0%' },
+                    { value: 25, label: '25%' },
+                    { value: 50, label: '50%' },
+                    { value: 75, label: '75%' },
+                    { value: 100, label: '100%' }
+                  ]}
                   sx={{
                     '& .MuiSlider-thumb': {
-                      width: 24,
-                      height: 24
+                      width: 28,
+                      height: 28
+                    },
+                    '& .MuiSlider-mark': {
+                      width: 8,
+                      height: 8,
+                      borderRadius: '50%'
                     }
                   }}
                 />
               </Box>
-              <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                <UnstakeIcon sx={{ mr: 1, color: 'primary.main' }} />
-                <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                  Unstake {unstakePercent}% ({unstakeAmount.toFixed(4)} {tokenInfo?.symbol})
-                </Typography>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', flex: 1, mr: 2 }}>
+                  <UnstakeIcon sx={{ mr: 1, color: 'primary.main' }} />
+                  <TextField
+                    fullWidth
+                    size="medium"
+                    value={unstakeAmount}
+                    onChange={(e) => handleUnstakeAmountChange(e.target.value)}
+                    placeholder="Enter amount"
+                    InputProps={{
+                      endAdornment: <Typography sx={{ ml: 1 }}>{tokenInfo?.symbol}</Typography>
+                    }}
+                  />
+                </Box>
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  <WalletIcon sx={{ mr: 1, color: 'text.secondary' }} />
+                  <Typography variant="body1" color="text.secondary">
+                    Staked: {stakedAmount.toFixed(4)} {tokenInfo?.symbol}
+                  </Typography>
+                </Box>
               </Box>
               <Button 
                 variant="contained" 
-                onClick={handleUnstake} 
+                onClick={handleUnstake}
+                disabled={Number(unstakeAmount) === 0}
                 fullWidth
                 size="large"
                 startIcon={<UnstakeIcon />}
                 sx={{ 
-                  py: 1.5,
+                  py: 2,
                   textTransform: 'none',
                   fontWeight: 600,
-                  fontSize: '1.1rem',
+                  fontSize: '1.2rem',
                   borderRadius: 2
                 }}
               >
@@ -214,17 +307,17 @@ const StakingModal: React.FC<StakingModalProps> = ({ selectedPair, isModalOpen, 
               <Paper 
                 variant="outlined" 
                 sx={{ 
-                  p: 3, 
+                  p: 4, 
                   borderRadius: 2, 
                   textAlign: 'center',
                   background: 'linear-gradient(145deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0) 100%)'
                 }}
               >
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 1 }}>
-                  <AccountBalanceIcon sx={{ mr: 1, color: 'primary.main', fontSize: 28 }} />
-                  <Typography variant="h6">Available Rewards</Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 2 }}>
+                  <AccountBalanceIcon sx={{ mr: 1, color: 'primary.main', fontSize: 32 }} />
+                  <Typography variant="h5">Available Rewards</Typography>
                 </Box>
-                <Typography variant="h4" color="primary" sx={{ fontWeight: 600 }}>
+                <Typography variant="h3" color="primary" sx={{ fontWeight: 600 }}>
                   {pendingRewards.toFixed(4)} LIB
                 </Typography>
               </Paper>
@@ -236,10 +329,10 @@ const StakingModal: React.FC<StakingModalProps> = ({ selectedPair, isModalOpen, 
                 size="large"
                 startIcon={<RewardsIcon />}
                 sx={{ 
-                  py: 1.5,
+                  py: 2,
                   textTransform: 'none',
                   fontWeight: 600,
-                  fontSize: '1.1rem',
+                  fontSize: '1.2rem',
                   borderRadius: 2
                 }}
               >
