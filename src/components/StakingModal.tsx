@@ -159,7 +159,7 @@ const StakingModal: React.FC<StakingModalProps> = ({ selectedPair, isModalOpen, 
           >
             <Tab icon={<StakeIcon />} label="Stake" sx={{ fontWeight: 500 }} />
             <Tab icon={<UnstakeIcon />} label="Unstake" sx={{ fontWeight: 500 }} />
-            <Tab icon={<RewardsIcon />} label="Withdraw" sx={{ fontWeight: 500 }} />
+            <Tab icon={<RewardsIcon />} label="Claim" sx={{ fontWeight: 500 }} />
           </Tabs>
 
           <Divider sx={{ mb: 4 }} />
