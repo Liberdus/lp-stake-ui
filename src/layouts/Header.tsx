@@ -93,7 +93,7 @@ const Header: React.FC = () => {
                 WebkitTextFillColor: 'transparent'
               }}
             >
-              Liber LP Staking
+              Liberdus LP Staking
             </Typography>
           </Box>
 
