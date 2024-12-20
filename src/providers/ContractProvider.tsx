@@ -385,44 +385,10 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
     }
   };
 
-  const calculatePendingRewards = async (userAddress: string, lpTokenAddress: string) => {
-    try {
-      if (!contract || !provider || !rewardTokenContract) throw new Error('Contract not initialized');
-      const hourlyRewardRate = Number(ethers.formatEther(await contract.hourlyRewardRate()));
-      const totalWeight = Number(ethers.formatEther(await contract.totalWeight()));
-      const pairInfo = await contract.getPairInfo(lpTokenAddress);
-      const userStakeInfo = await getUserStakeInfo(userAddress, lpTokenAddress);
-
-      const pairWeight = Number(ethers.formatEther(pairInfo.weight));
-      const userStakeAmount = Number(ethers.formatEther(userStakeInfo.amount));
-      const lastRewardTime = Number(userStakeInfo.lastRewardTime);
-      const pendingRewards = Number(ethers.formatEther(userStakeInfo.pendingRewards));
-
-      const currentBlock = await provider.getBlock('latest');
-      const currentTimestamp = currentBlock?.timestamp || 0;
-      const timeElapsed = currentTimestamp - lastRewardTime;
-
-      const totalLPSupply = Number(ethers.formatEther(await rewardTokenContract.balanceOf(STAKING_CONTRACT_ADDRESS)));
-
-      if (totalWeight == 0 || pairWeight == 0 || totalLPSupply == 0) {
-        return 0;
-      }
-      const rewardPerSecond = hourlyRewardRate / 3600;
-      const pairRewards = (rewardPerSecond * timeElapsed * pairWeight) / totalWeight;
-      const availableRewards = pendingRewards + (pairRewards * userStakeAmount) / totalLPSupply;
-
-      return availableRewards;
-    } catch (err: any) {
-      const errorMessage = err.reason || 'Failed to calculate pending rewards';
-      setError(new Error(errorMessage));
-      return 0;
-    }
-  };
-
   const getPendingRewards = async (userAddress: string, lpToken: string) => {
     try {
       if (!contract || !provider || !rewardTokenContract) throw new Error('Contract not initialized');
-      return await calculatePendingRewards(userAddress, lpToken);
+      return await contract.earned(userAddress, lpToken);
     } catch (err: any) {
       const errorMessage = err.reason || 'Failed to get pending rewards';
       setError(new Error(errorMessage));

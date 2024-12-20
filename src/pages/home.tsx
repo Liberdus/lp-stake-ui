@@ -56,7 +56,7 @@ const Home: React.FC = () => {
               const userAddress = await signer.getAddress();
               const userStake = await getUserStakeInfo(userAddress, pair.lpToken);
               myShare = (Number(ethers.formatEther(userStake.amount)) * 100) / tvl || 0;
-              myEarnings = await getPendingRewards(userAddress, pair.lpToken);
+              myEarnings = Number(ethers.formatEther(await getPendingRewards(userAddress, pair.lpToken)));
             }
 
             return {

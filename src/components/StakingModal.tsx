@@ -104,7 +104,7 @@ const StakingModal: React.FC<StakingModalProps> = ({ selectedPair, isModalOpen, 
       if (!signer || !selectedPair) return;
       const tokenInfo = await getTokenInfo(selectedPair.lpToken);
       const tokenBalanceOfSigner = await getERC20Balance(signer.address, selectedPair.lpToken);
-      const pendingRewards = await getPendingRewards(signer.address, selectedPair.lpToken);
+      const pendingRewards = Number(ethers.formatEther(await getPendingRewards(signer.address, selectedPair.lpToken)));
       setTokenInfo(tokenInfo);
       setBalance(Number(ethers.formatUnits(tokenBalanceOfSigner, tokenInfo.decimals)));
       setPendingRewards(pendingRewards);
