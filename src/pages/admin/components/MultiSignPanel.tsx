@@ -50,10 +50,10 @@ const MultiSignPanel: React.FC<MultiSignPanelProps> = () => {
   async function loadContractData() {
     setIsLoading(true);
     try {
-      const counter = await getActionCounter();
+      const counter = Number(await getActionCounter());
       const approvals = await getRequiredApprovals();
       let tmpProposals: Action[] = [];
-      for (let i = 1; i <= counter; i++) {
+      for (let i = counter; i > Math.max(counter - 100, 0); i--) {
         const proposal = await getActions(i);
         const pairs = await getActionPairs(i);
         const weights = await getActionWeights(i);
@@ -164,7 +164,7 @@ const MultiSignPanel: React.FC<MultiSignPanelProps> = () => {
               </TableHead>
               <TableBody>
                 {filteredProposals.map((proposal, index) => {
-                  const actionId = index + 1;
+                  const actionId = actionCounter! - index;
                   const isExecuted = proposal.executed;
                   const canExecute = !isExecuted && requiredApprovals && proposal.approvals && proposal.approvals >= requiredApprovals;
                   const isExpanded = expandedRows.has(actionId);
