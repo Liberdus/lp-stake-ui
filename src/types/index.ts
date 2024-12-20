@@ -46,6 +46,7 @@ interface ContractEvent {
 }
 
 interface Action {
+  id: number;
   actionType: number;
   newHourlyRewardRate: bigint;
   pairs: string[];
@@ -62,6 +63,7 @@ interface Action {
   approvals: number;
   approvedBy: string[];
   proposedTime: number;
+  rejected: boolean;
 }
 
 export type { UserInfo, PairInfo, SCPairData, UserStakeInfo, TokenInfo, ContractEvent, Action };

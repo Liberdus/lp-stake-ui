@@ -79,6 +79,9 @@ interface ContractContextType {
 
   // Events
   getEvents: () => ContractEvent[];
+
+  // Reject action
+  rejectAction: (actionId: number) => Promise<void>;
 }
 
 const ContractContext = createContext<ContractContextType>({
@@ -118,6 +121,7 @@ const ContractContext = createContext<ContractContextType>({
   getActionPairs: async () => [],
   getActionWeights: async () => [],
   getEvents: () => [],
+  rejectAction: async () => {},
 });
 
 export const useContract = () => useContext(ContractContext);
@@ -631,6 +635,17 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
 
   const getEvents = () => events;
 
+  const rejectAction = async (actionId: number) => {
+    try {
+      if (!contract) throw new Error('Contract not initialized');
+      const tx = await contract.rejectAction(actionId);
+      await tx.wait();
+    } catch (err: any) {
+      const errorMessage = err.reason || 'Failed to reject action';
+      setError(new Error(errorMessage));
+    }
+  };
+
   return (
     <ContractContext.Provider
       value={{
@@ -678,6 +693,8 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
         // Events
         getEvents,
         getContractAddress,
+        // Reject action
+        rejectAction,
       }}
     >
       {children}

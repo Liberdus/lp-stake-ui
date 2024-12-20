@@ -128,6 +128,25 @@
       {
         "indexed": false,
         "internalType": "uint256",
+        "name": "actionId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "rejecter",
+        "type": "address"
+      }
+    ],
+    "name": "ActionRejected",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
         "name": "newRate",
         "type": "uint256"
       }
@@ -434,19 +453,6 @@
   },
   {
     "inputs": [],
-    "name": "MIN_SIGNERS",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
     "name": "MIN_STAKE",
     "outputs": [
       {
@@ -474,19 +480,6 @@
   {
     "inputs": [],
     "name": "REQUIRED_APPROVALS",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "TOTAL_SIGNERS",
     "outputs": [
       {
         "internalType": "uint256",
@@ -584,6 +577,11 @@
         "internalType": "uint256",
         "name": "proposedTime",
         "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "rejected",
+        "type": "bool"
       }
     ],
     "stateMutability": "view",
@@ -1215,6 +1213,19 @@
         "type": "uint256"
       }
     ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "actionId",
+        "type": "uint256"
+      }
+    ],
+    "name": "rejectAction",
+    "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   },

@@ -32,6 +32,7 @@ import PlayCircleIcon from '@mui/icons-material/PlayCircle';
 import { useAtom } from 'jotai';
 import { refetchAtom } from '@/store/refetch';
 import RefreshButton from '@/components/RefreshButton';
+import BlockIcon from '@mui/icons-material/Block';
 
 const ACTION_TYPE = ['SET_HOURLY_REWARD_RATE', 'UPDATE_PAIR_WEIGHTS', 'ADD_PAIR', 'REMOVE_PAIR', 'CHANGE_SIGNER', 'WITHDRAW_REWARDS'];
 
@@ -45,7 +46,7 @@ const MultiSignPanel: React.FC<MultiSignPanelProps> = () => {
   const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set());
   const [hideExecuted, setHideExecuted] = useState<boolean>(false);
   const [refetch, setRefetch] = useAtom(refetchAtom);
-  const { contract, approveAction, executeAction, getActionCounter, getRequiredApprovals, getActions, getActionPairs, getActionWeights } = useContract();
+  const { contract, approveAction, executeAction, rejectAction, getActionCounter, getRequiredApprovals, getActions, getActionPairs, getActionWeights } = useContract();
 
   async function loadContractData() {
     setIsLoading(true);
@@ -58,6 +59,7 @@ const MultiSignPanel: React.FC<MultiSignPanelProps> = () => {
         const pairs = await getActionPairs(i);
         const weights = await getActionWeights(i);
         tmpProposals.push({
+          id: i,
           actionType: proposal.actionType,
           newHourlyRewardRate: proposal.newHourlyRewardRate,
           pairs: pairs.map((pair) => pair.toString()),
@@ -73,6 +75,7 @@ const MultiSignPanel: React.FC<MultiSignPanelProps> = () => {
           expired: proposal.expired,
           approvals: proposal.approvals,
           approvedBy: proposal.approvedBy,
+          rejected: proposal.rejected,
           proposedTime: proposal.proposedTime,
         });
       }
@@ -99,14 +102,17 @@ const MultiSignPanel: React.FC<MultiSignPanelProps> = () => {
 
   const handleApproveAction = async (id: number) => {
     await approveAction(id);
-    const updatedProposal = await getActions(id);
-    setProposals((prev) => prev.map((p, idx) => (idx + 1 === id ? updatedProposal : p)));
+    setRefetch(true);
   };
 
   const handleExecuteAction = async (id: number) => {
     await executeAction(id);
-    const updatedProposal = await getActions(id);
-    setProposals((prev) => prev.map((p, idx) => (idx + 1 === id ? updatedProposal : p)));
+    setRefetch(true);
+  };
+
+  const handleRejectAction = async (id: number) => {
+    await rejectAction(id);
+    setRefetch(true);
   };
 
   const toggleRow = (id: number) => {
@@ -192,15 +198,26 @@ const MultiSignPanel: React.FC<MultiSignPanelProps> = () => {
                           <Chip label={`${proposal.approvals?.toString() || 0} / ${requiredApprovals?.toString() || 0}`} color={canExecute ? 'success' : 'default'} size="small" />
                         </TableCell>
                         <TableCell sx={{ textAlign: 'center' }}>
-                          {isExecuted ? <Chip icon={<CheckCircleIcon />} label="Executed" color="success" size="small" /> : <Chip icon={<CancelIcon />} label="Pending" color="warning" size="small" />}
+                          {isExecuted ? (
+                            <Chip icon={<CheckCircleIcon />} label="Executed" color="success" size="small" />
+                          ) : proposal.rejected ? (
+                            <Chip icon={<BlockIcon />} label="Rejected" color="error" size="small" />
+                          ) : (
+                            <Chip icon={<CancelIcon />} label="Pending" color="warning" size="small" />
+                          )}
                         </TableCell>
                         <TableCell sx={{ textAlign: 'center' }}>
                           <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
-                            {!isExecuted && (
+                            {!isExecuted && !proposal.rejected && (
                               <>
                                 <Tooltip title="Approve Action">
                                   <IconButton color="primary" onClick={() => handleApproveAction(actionId)} size="small">
                                     <CheckCircleIcon />
+                                  </IconButton>
+                                </Tooltip>
+                                <Tooltip title="Reject Action">
+                                  <IconButton color="error" onClick={() => handleRejectAction(actionId)} size="small">
+                                    <BlockIcon />
                                   </IconButton>
                                 </Tooltip>
                                 <Tooltip title={canExecute ? 'Execute Action' : 'Needs more approvals'}>
