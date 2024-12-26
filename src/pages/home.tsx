@@ -43,7 +43,6 @@ const Home: React.FC = () => {
         const pairsData = await getPairs();
         const hourlyRate = await getHourlyRewardRate();
         const totalWeight = await getTotalWeight();
-
         const pairsInfo: PairInfo[] = await Promise.all(
           pairsData.map(async (pair: SCPairData) => {
             let myShare = 0;
@@ -53,13 +52,14 @@ const Home: React.FC = () => {
             const lpTokenPrice = await fetchTokenPrice(pair.lpToken);
             const rewardTokenPrice = await fetchTokenPrice(rewardToken.address);
 
-            const apr = calcAPR(Number(ethers.formatEther(hourlyRate)), Number(ethers.formatEther(await getTVL(pair.lpToken))), lpTokenPrice, rewardTokenPrice);
-            const tvl = Number(ethers.formatEther(await getTVL(pair.lpToken)));
+            const tvlWei = await getTVL(pair.lpToken);
+            const apr = calcAPR(Number(ethers.formatEther(hourlyRate)), Number(ethers.formatEther(tvlWei)), lpTokenPrice, rewardTokenPrice);
+            const tvl = Number(ethers.formatEther(tvlWei));
 
             if (signer) {
               const userAddress = await signer.getAddress();
               const userStake = await getUserStakeInfo(userAddress, pair.lpToken);
-              myShare = (Number(ethers.formatEther(userStake.amount)) * 100) / tvl || 0;
+              myShare = tvlWei > 0n ? Number((userStake.amount * 100n) / tvlWei) : 0;
               myEarnings = Number(ethers.formatEther(await getPendingRewards(userAddress, pair.lpToken)));
             }
 
