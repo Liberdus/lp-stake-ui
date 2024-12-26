@@ -1,101 +1,110 @@
 import { useEffect, useState } from 'react';
-import { useAtom } from 'jotai';
-import { userInfoAtom } from '@/store/userInfo';
 import { useNavigate } from 'react-router-dom';
-import { Container, Typography, Grid, Stack, Button, Modal, Box } from '@mui/material';
-import MultiSignPanel from './components/MultiSignPanel';
-import UpdatePairWeightModal from './components/UpdatePairWeightModal';
-import RemovePairModal from './components/RemovePairModal';
-import HourlyRateModal from './components/HourlyRateModal';
-import ChangeSignerModal from './components/ChangeSignerModal';
-import AddPairModal from './components/AddPairModal';
-import WithdrawalModal from './components/WithdrawalModal';
-import { refetchAtom } from '@/store/refetch';
-import ModalBox from '@/components/ModalBox';
+import { Container, Typography, Modal, Box, Alert, CircularProgress } from '@mui/material';
 import { useAuth } from '@/providers/AuthProvider';
-import InfoCard from './components/InfoCard';
+import AdminPanel from './components/AdminPanel';
 
 const Admin: React.FC = () => {
   const navigate = useNavigate();
-  const [userInfo] = useAtom(userInfoAtom);
-  const [, setRefetch] = useAtom(refetchAtom);
-  const [modalOpen, setModalOpen] = useState<number>(0);
-  const [openAlertModal, setOpenAlertModal] = useState(false);
   const { isAdmin } = useAuth();
+  const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
     if (!isAdmin) {
-      setOpenAlertModal(true);
+      setShowModal(true);
+      const timer = setTimeout(() => {
+        navigate('/', { replace: true });
+      }, 3000);
+
+      return () => clearTimeout(timer);
     }
-  }, [userInfo]);
+  }, [isAdmin, navigate]);
 
-  const onClose = () => {
-    setModalOpen(0);
-    setRefetch(true);
-  };
-
-  return (
-    <>
-      <Container maxWidth="lg">
-        <Typography variant="h3" align="center" gutterBottom sx={{ my: 4 }}>
-          Admin Panel
-        </Typography>
-        <Grid container spacing={3}>
-          <Grid item xs={12} md={9}>
-            <MultiSignPanel />
-          </Grid>
-          <Grid item xs={12} md={3}>
-            <Typography variant="h5" gutterBottom>
-              New Proposal
-            </Typography>
-            <Stack direction="column" spacing={2}>
-              <Button variant="contained" color="primary" onClick={() => setModalOpen(1)}>
-                Update Hourly Rate
-              </Button>
-              <Button variant="contained" color="primary" onClick={() => setModalOpen(2)}>
-                Add Pair
-              </Button>
-              <Button variant="contained" color="primary" onClick={() => setModalOpen(3)}>
-                Remove Pair
-              </Button>
-              <Button variant="contained" color="primary" onClick={() => setModalOpen(4)}>
-                Update Pair Weight
-              </Button>
-              <Button variant="contained" color="primary" onClick={() => setModalOpen(5)}>
-                Change Signer
-              </Button>
-              <Button variant="contained" color="primary" onClick={() => setModalOpen(6)}>
-                Withdraw Rewards
-              </Button>
-            </Stack>
-          </Grid>
-        </Grid>
-        <Box sx={{ mt: 4 }}>
-          <InfoCard />
-        </Box>
-      </Container>
-
-      <HourlyRateModal open={modalOpen === 1} onClose={onClose} />
-      <AddPairModal open={modalOpen === 2} onClose={onClose} />
-      <RemovePairModal open={modalOpen === 3} onClose={onClose} />
-      <UpdatePairWeightModal open={modalOpen === 4} onClose={onClose} />
-      <ChangeSignerModal open={modalOpen === 5} onClose={onClose} />
-      <WithdrawalModal open={modalOpen === 6} onClose={onClose} />
-
-      <Modal
-        open={openAlertModal}
-        onClose={() => {
-          setOpenAlertModal(false);
-          navigate('/');
+  if (!isAdmin) {
+    return (
+      <Modal 
+        open={showModal} 
+        onClose={() => navigate('/')}
+        aria-labelledby="access-denied-modal"
+        aria-describedby="access-denied-description"
+        sx={{
+          backdropFilter: 'blur(4px)',
+          backgroundColor: 'rgba(0, 0, 0, 0.5)'
         }}
       >
-        <ModalBox>
-          <Typography variant="h5" gutterBottom>
-            You are not admin. You cant access this page.
+        <Box
+          sx={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            width: { xs: '90%', sm: 400 },
+            bgcolor: 'background.paper',
+            borderRadius: 3,
+            boxShadow: '0px 8px 24px rgba(0, 0, 0, 0.15)',
+            p: 4,
+            outline: 'none',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: 3,
+            border: '1px solid',
+            borderColor: 'divider'
+          }}
+        >
+          <Alert 
+            severity="error" 
+            variant="filled"
+            sx={{ 
+              width: '100%',
+              '& .MuiAlert-message': {
+                width: '100%',
+                textAlign: 'center',
+                fontWeight: 'bold',
+                fontSize: '1.1rem'
+              },
+              borderRadius: 2
+            }}
+          >
+            Access Denied
+          </Alert>
+          <Typography 
+            variant="h6" 
+            id="access-denied-description"
+            sx={{ 
+              textAlign: 'center',
+              color: 'text.primary',
+              fontWeight: 500
+            }}
+          >
+            You do not have permission to access this page.
           </Typography>
-        </ModalBox>
+          <Box 
+            sx={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: 1.5,
+              backgroundColor: 'action.hover',
+              padding: 2,
+              borderRadius: 2,
+              width: '100%',
+              justifyContent: 'center'
+            }}
+          >
+            <CircularProgress size={24} thickness={4} />
+            <Typography variant="body1" color="text.secondary">
+              Redirecting to home page...
+            </Typography>
+          </Box>
+        </Box>
       </Modal>
-    </>
+    );
+  }
+
+  return (
+    <Container maxWidth="lg" sx={{ py: 4 }}>
+      <AdminPanel />
+    </Container>
   );
 };
 
