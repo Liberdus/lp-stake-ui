@@ -508,11 +508,15 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
   const getTotalWeight = async () => {
     try {
       if (!contract) throw new Error('Contract not initialized');
-      return await contract.totalWeight();
+      const totalWeight = await contract.totalWeight();
+      if(totalWeight === BigInt(0)) {
+        return BigInt(1);
+      }
+      return totalWeight;
     } catch (err: any) {
       const errorMessage = err.reason || 'Failed to get total weight';
       setError(new Error(errorMessage));
-      return BigInt(0);
+      return BigInt(1);
     }
   };
 

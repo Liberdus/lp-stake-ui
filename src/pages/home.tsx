@@ -28,8 +28,9 @@ const Home: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedPair, setSelectedPair] = useState<PairInfo | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [totalWeight, setTotalWeight] = useState<number>(0);
   const rewardToken = useAtomValue(rewardTokenAtom);
-  const { contract, getPairs, getHourlyRewardRate, getUserStakeInfo, getTVL, getPendingRewards } = useContract();
+  const { contract, getPairs, getHourlyRewardRate, getUserStakeInfo, getTVL, getPendingRewards, getTotalWeight } = useContract();
   const [refetch, setRefetch] = useAtom(refetchAtom);
   const provider = useEthersProvider();
   const signer = useEthersSigner();
@@ -40,6 +41,8 @@ const Home: React.FC = () => {
       try {
         const pairsData = await getPairs();
         const hourlyRate = await getHourlyRewardRate();
+        const totalWeight = await getTotalWeight();
+
         const pairsInfo: PairInfo[] = await Promise.all(
           pairsData.map(async (pair: SCPairData) => {
             let myShare = 0;
@@ -83,8 +86,10 @@ const Home: React.FC = () => {
           }
           return b.apr - a.apr;
         });
+
         setPairs(sortedPairs);
         setHourlyRewardRate(ethers.formatEther(hourlyRate));
+        setTotalWeight(Number(totalWeight));
       } catch (error) {}
     }
     setIsLoading(false);
@@ -185,7 +190,7 @@ const Home: React.FC = () => {
                     <TableCell sx={{ color: 'success.main', fontWeight: 'bold' }}>{pair.apr.toFixed(1)}%</TableCell>
                     <TableCell>
                       <Chip
-                        label={`${ethers.formatEther(pair.weight)} (${((Number(pair.weight) * 100) / Number(pairs.reduce((acc, p) => acc + p.weight, BigInt(0)))).toFixed(2)}%)`}
+                        label={`${ethers.formatEther(pair.weight)} (${((Number(pair.weight) * 100) / Number(totalWeight)).toFixed(2)}%)`}
                         color="secondary"
                       />
                     </TableCell>

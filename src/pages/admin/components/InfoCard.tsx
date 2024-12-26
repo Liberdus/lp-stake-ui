@@ -12,13 +12,16 @@ import GroupIcon from '@mui/icons-material/Group';
 import { refetchAtom } from '@/store/refetch';
 
 function InfoCard() {
-  const { contract, rewardTokenContract, getPairs, getSigners, getHourlyRewardRate } = useContract();
   const [rewardBalance, setRewardBalance] = useState<string>('0');
   const [pairs, setPairs] = useState<SCPairData[]>([]);
   const [signers, setSigners] = useState<string[]>([]);
   const [hourlyRate, setHourlyRate] = useState<string>('0');
-  const [rewardToken] = useAtom(rewardTokenAtom);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [totalWeight, setTotalWeight] = useState<number>(0);
+
+  const { contract, rewardTokenContract, getPairs, getSigners, getHourlyRewardRate, getTotalWeight } = useContract();
+
+  const [rewardToken] = useAtom(rewardTokenAtom);
   const [refetch, setRefetch] = useAtom(refetchAtom);
 
   const fetchContractInfo = async () => {
@@ -29,10 +32,12 @@ function InfoCard() {
         const pairs = await getPairs();
         const signers = await getSigners();
         const hourlyRate = await getHourlyRewardRate();
+        const totalWeight = await getTotalWeight();
         setPairs(pairs);
         setSigners(signers);
         setHourlyRate(hourlyRate.toString());
         setRewardBalance(ethers.formatEther(balance));
+        setTotalWeight(Number(totalWeight));
       } finally {
         setIsLoading(false);
       }
@@ -101,19 +106,24 @@ function InfoCard() {
                     </Typography>
                   </Box>
                   <Grid container spacing={2}>
-                    {pairs.map((pair, index) => (
-                      <Grid item xs={12} key={index}>
-                        <Card variant="outlined" sx={{ p: 2 }}>
-                          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <Typography sx={{ fontWeight: 'medium' }}>{pair.pairName}</Typography>
-                            <Chip label={`Weight: ${Number(ethers.formatEther(pair.weight)).toFixed(2)}`} color="primary" size="small" />
-                          </Box>
-                          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                            {pair.lpToken}
-                          </Typography>
-                        </Card>
-                      </Grid>
-                    ))}
+                    {pairs.map((pair, index) => {
+                      const weight = Number(ethers.formatEther(pair.weight));
+                      const percentage = ((weight / totalWeight) * 100).toFixed(0);
+
+                      return (
+                        <Grid item xs={12} key={index}>
+                          <Card variant="outlined" sx={{ p: 2 }}>
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <Typography sx={{ fontWeight: 'medium' }}>{pair.pairName}</Typography>
+                              <Chip label={`Weight: ${weight} (${percentage}%)`} color="primary" size="small" />
+                            </Box>
+                            <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                              {pair.lpToken}
+                            </Typography>
+                          </Card>
+                        </Grid>
+                      );
+                    })}
                   </Grid>
                 </Box>
 
