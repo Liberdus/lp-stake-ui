@@ -1,8 +1,8 @@
 import ModalBox from '@/components/ModalBox';
 import { useContract } from '@/providers/ContractProvider';
-import { Alert, Button, Card, CardActions, CardContent, Modal, Stack, TextField, Typography } from '@mui/material';
+import { Alert, Button, Card, CardActions, CardContent, Modal, Stack, Typography, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
 import { ethers } from 'ethers';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 interface RemovePairModalProps {
   open: boolean;
@@ -12,11 +12,12 @@ interface RemovePairModalProps {
 const RemovePairModal: React.FC<RemovePairModalProps> = ({ open, onClose }) => {
   const [removePairAddress, setRemovePairAddress] = useState<string>('');
   const [error, setError] = useState<string>('');
-  const { proposeRemovePair } = useContract();
-
+  const [availablePairs, setAvailablePairs] = useState<{address: string, pairName: string, platform: string, weight: string}[]>([]);
+  const { proposeRemovePair, getPairs } = useContract();
+  
   const validateInput = (): boolean => {
     if (!removePairAddress) {
-      setError('Please enter an LP token address');
+      setError('Please select an LP token');
       return false;
     }
     if (!ethers.isAddress(removePairAddress)) {
@@ -38,6 +39,15 @@ const RemovePairModal: React.FC<RemovePairModalProps> = ({ open, onClose }) => {
     }
   };
 
+  useEffect(() => {
+    async function loadContractData() {
+      const pairs = await getPairs();
+      const pairsWithWeights = pairs.map((pair) => ({ address: pair.lpToken, pairName: pair.pairName, platform: pair.platform, weight: pair.weight.toString() }));
+      setAvailablePairs(pairsWithWeights);
+    }
+    loadContractData();
+  }, []);
+
   return (
     <Modal open={open} onClose={onClose}>
       <ModalBox>
@@ -54,14 +64,20 @@ const RemovePairModal: React.FC<RemovePairModalProps> = ({ open, onClose }) => {
                 </Alert>
               )}
 
-              <TextField
-                label="LP Token Address"
-                value={removePairAddress}
-                onChange={(e) => setRemovePairAddress(e.target.value)}
-                variant="outlined"
-                fullWidth
-                helperText="Enter the LP token address to remove"
-              />
+              <FormControl fullWidth>
+                <InputLabel>Select LP Token</InputLabel>
+                <Select
+                  value={removePairAddress}
+                  onChange={(e) => setRemovePairAddress(e.target.value)}
+                  label="Select LP Token"
+                >
+                  {availablePairs?.map((pair) => (
+                    <MenuItem key={pair.address} value={pair.address}>
+                      {pair.pairName} ({pair.platform})
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
             </Stack>
           </CardContent>
 
