@@ -14,7 +14,6 @@ import CloseIcon from '@mui/icons-material/Close';
 import StakeIcon from '@mui/icons-material/AddCircleOutline';
 import UnstakeIcon from '@mui/icons-material/RemoveCircleOutline';
 import RewardsIcon from '@mui/icons-material/LocalAtm';
-import PercentIcon from '@mui/icons-material/Percent';
 import WalletIcon from '@mui/icons-material/AccountBalanceWallet';
 import IconButton from '@mui/material/IconButton';
 
@@ -194,7 +193,7 @@ const StakingModal: React.FC<StakingModalProps> = ({ selectedPair, isModalOpen, 
               </Box>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', flex: 1, mr: 2 }}>
-                  <PercentIcon sx={{ mr: 1, color: 'primary.main' }} />
+                  <StakeIcon sx={{ mr: 1, color: 'primary.main' }} />
                   <TextField
                     fullWidth
                     size="medium"
