@@ -1,6 +1,6 @@
 import ModalBox from '@/components/ModalBox';
 import { useContract } from '@/providers/ContractProvider';
-import { Alert, Box, Button, Card, CardActions, CardContent, Modal, Stack, TextField, Typography } from '@mui/material';
+import { Alert, Box, Button, Card, CardActions, CardContent, Modal, Stack, TextField, Typography, MenuItem } from '@mui/material';
 import { ethers } from 'ethers';
 import { useEffect, useState } from 'react';
 
@@ -11,23 +11,27 @@ interface UpdatePairWeightModalProps {
 
 const UpdatePairWeightModal: React.FC<UpdatePairWeightModalProps> = ({ open, onClose }) => {
   const [updatePairAddresses, setUpdatePairAddresses] = useState<string[]>(['']);
-  const [updatePairWeights, setUpdatePairWeights] = useState<string[]>(['0']);
+  const [updatePairWeights, setUpdatePairWeights] = useState<string[]>(['']);
   const [maxWeight, setMaxWeight] = useState<number>();
   const [error, setError] = useState<string>('');
+  const [availablePairs, setAvailablePairs] = useState<{address: string, pairName: string, platform: string, weight: string}[]>([]);
 
-  const { proposeUpdatePairWeights, getMaxWeight } = useContract();
+  const { proposeUpdatePairWeights, getMaxWeight, getPairs } = useContract();
 
   useEffect(() => {
     async function loadContractData() {
       const maxWeight = await getMaxWeight();
       setMaxWeight(Number(maxWeight));
+      const pairs = await getPairs();
+      const pairsWithWeights = pairs.map((pair) => ({ address: pair.lpToken, pairName: pair.pairName, platform: pair.platform, weight: pair.weight.toString() }));
+      setAvailablePairs(pairsWithWeights);
     }
     loadContractData();
   }, []);
 
   const handleAddPairWeight = () => {
     setUpdatePairAddresses([...updatePairAddresses, '']);
-    setUpdatePairWeights([...updatePairWeights, '0']);
+    setUpdatePairWeights([...updatePairWeights, '']);
   };
 
   const handleRemovePairWeight = (index: number) => {
@@ -43,9 +47,18 @@ const UpdatePairWeightModal: React.FC<UpdatePairWeightModalProps> = ({ open, onC
       return;
     }
 
+    // Check for duplicates
+    const uniqueAddresses = new Set(updatePairAddresses);
+    if (uniqueAddresses.size !== updatePairAddresses.length) {
+      setError('Duplicate LP token addresses are not allowed');
+      return;
+    }
+
     // Validate weights
     if (maxWeight) {
-      const validWeights = updatePairWeights.every((weight) => Number(weight) <= Number(maxWeight) && Number(weight) >= 0);
+      const validWeights = updatePairWeights.every((weight) => 
+        weight !== '' && Number(weight) <= Number(maxWeight) && Number(weight) >= 0
+      );
 
       if (!validWeights) {
         setError(`Weights must be between 0 and ${maxWeight}`);
@@ -76,17 +89,31 @@ const UpdatePairWeightModal: React.FC<UpdatePairWeightModalProps> = ({ open, onC
               {updatePairAddresses.map((address, index) => (
                 <Box key={index} sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
                   <TextField
+                    select
                     fullWidth
                     label="LP Token Address"
                     value={address}
                     onChange={(e) => {
                       const newAddresses = [...updatePairAddresses];
                       newAddresses[index] = e.target.value;
+                      const selectedPair = availablePairs.find(pair => pair.address === e.target.value);
+                      const newWeights = [...updatePairWeights];
+                      newWeights[index] = selectedPair ? selectedPair.weight : '';
                       setUpdatePairAddresses(newAddresses);
+                      setUpdatePairWeights(newWeights);
                     }}
                     variant="outlined"
-                    helperText="Enter the LP token address"
-                  />
+                    helperText="Select the LP token address"
+                  >
+                    <MenuItem value="">Select an address</MenuItem>
+                    {availablePairs
+                      .filter(pair => !updatePairAddresses.includes(pair.address) || pair.address === address)
+                      .map((pair) => (
+                        <MenuItem key={pair.address} value={pair.address}>
+                          {pair.pairName} ({pair.platform})
+                        </MenuItem>
+                    ))}
+                  </TextField>
                   <TextField
                     type="number"
                     label="Weight"
@@ -118,7 +145,7 @@ const UpdatePairWeightModal: React.FC<UpdatePairWeightModalProps> = ({ open, onC
             <Button
               variant="contained"
               onClick={handleProposeUpdateWeights}
-              disabled={updatePairAddresses.some((addr) => !addr) || updatePairWeights.some((w) => w === '0')}
+              disabled={updatePairAddresses.some((addr) => !addr) || updatePairWeights.some((w) => w === '')}
               color="warning"
               size="large"
             >
