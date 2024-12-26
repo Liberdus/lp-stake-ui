@@ -44,7 +44,7 @@ const MultiSignPanel: React.FC<MultiSignPanelProps> = () => {
   const [proposals, setProposals] = useState<Action[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set());
-  const [hideExecuted, setHideExecuted] = useState<boolean>(false);
+  const [hideExecuted, setHideExecuted] = useState<boolean>(true);
   const [refetch, setRefetch] = useAtom(refetchAtom);
   const { contract, approveAction, executeAction, rejectAction, getActionCounter, getRequiredApprovals, getActions, getActionPairs, getActionWeights } = useContract();
 
