@@ -37,7 +37,7 @@ function InfoCard() {
         setSigners(signers);
         setHourlyRate(hourlyRate.toString());
         setRewardBalance(ethers.formatEther(balance));
-        setTotalWeight(Number(totalWeight));
+        setTotalWeight(Number(ethers.formatEther(totalWeight)));
       } finally {
         setIsLoading(false);
       }
@@ -108,7 +108,7 @@ function InfoCard() {
                   <Grid container spacing={2}>
                     {pairs.map((pair, index) => {
                       const weight = Number(ethers.formatEther(pair.weight));
-                      const percentage = ((weight / totalWeight) * 100).toFixed(0);
+                      const percentage = (weight * 100 / totalWeight).toFixed(0);
 
                       return (
                         <Grid item xs={12} key={index}>

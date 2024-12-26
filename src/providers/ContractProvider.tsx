@@ -37,7 +37,7 @@ interface ContractContextType {
   executeAction: (actionId: number) => Promise<void>;
 
   // User info
-  getPendingRewards: (userAddress: string, lpToken: string) => Promise<number>;
+  getPendingRewards: (userAddress: string, lpToken: string) => Promise<bigint>;
   getUserStakeInfo: (
     userAddress: string,
     lpToken: string
@@ -100,7 +100,7 @@ const ContractContext = createContext<ContractContextType>({
   proposeWithdrawRewards: async () => {},
   approveAction: async () => {},
   executeAction: async () => {},
-  getPendingRewards: async () => 0,
+  getPendingRewards: async () => 0n,
   getUserStakeInfo: async () => ({ amount: BigInt(0), pendingRewards: BigInt(0), lastRewardTime: BigInt(0) }),
   getPairInfo: async () => ({ token: '', platform: '', weight: BigInt(0), isActive: false }),
   getPairs: async () => [],
@@ -268,6 +268,7 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
         await approveTx.wait();
       }
 
+      console.log(lpToken, amountInWei);
       // Proceed with staking
       const tx = await contract.stake(lpToken, amountInWei);
       await tx.wait();
@@ -280,8 +281,9 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
   const unstake = async (lpToken: string, amount: string) => {
     try {
       if (!contract) throw new Error('Contract not initialized');
-      const tx = await contract.unstake(lpToken, ethers.parseEther(amount));
-      await tx.wait();
+      console.log(lpToken, amount);
+      // const tx = await contract.unstake(lpToken, ethers.parseEther(amount));
+      // await tx.wait();
     } catch (err: any) {
       const errorMessage = err.reason || 'Failed to unstake';
       setError(new Error(errorMessage));
@@ -396,7 +398,7 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
     } catch (err: any) {
       const errorMessage = err.reason || 'Failed to get pending rewards';
       setError(new Error(errorMessage));
-      return 0;
+      return BigInt(0);
     }
   };
 
