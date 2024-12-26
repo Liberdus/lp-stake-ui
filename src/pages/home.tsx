@@ -34,6 +34,7 @@ const Home: React.FC = () => {
   const [refetch, setRefetch] = useAtom(refetchAtom);
   const provider = useEthersProvider();
   const signer = useEthersSigner();
+  const [initialTab, setInitialTab] = useState(0);
 
   async function fetchData() {
     setIsLoading(true);
@@ -110,8 +111,9 @@ const Home: React.FC = () => {
     window.open(`https://app.uniswap.org/explore/pools/polygon/${pairAddress}`, '_blank');
   };
 
-  const handleShareClick = (pair: PairInfo) => {
+  const handleShareClick = (pair: PairInfo, tab: number = 0) => {
     setSelectedPair(pair);
+    setInitialTab(tab);
     setIsModalOpen(true);
   };
 
@@ -201,7 +203,7 @@ const Home: React.FC = () => {
                       </Button>
                     </TableCell>
                     <TableCell>
-                      <Button onClick={() => handleShareClick(pair)} variant="contained" color="secondary" disabled={!signer} size="small" startIcon={<RedeemIcon />}>
+                      <Button onClick={() => handleShareClick(pair, 2)} variant="contained" color="secondary" disabled={!signer} size="small" startIcon={<RedeemIcon />}>
                         {pair.myEarnings.toFixed(4)} LIB
                       </Button>
                     </TableCell>
@@ -213,7 +215,12 @@ const Home: React.FC = () => {
         </Paper>
       )}
 
-      <StakingModal selectedPair={selectedPair} isModalOpen={isModalOpen} setIsModalOpen={setIsModalOpen} />
+      <StakingModal 
+        selectedPair={selectedPair} 
+        isModalOpen={isModalOpen} 
+        setIsModalOpen={setIsModalOpen}
+        initialTab={initialTab}
+      />
     </Container>
   );
 };

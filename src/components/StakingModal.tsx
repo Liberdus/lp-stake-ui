@@ -21,10 +21,16 @@ interface StakingModalProps {
   selectedPair: PairInfo | null;
   isModalOpen: boolean;
   setIsModalOpen: (value: boolean) => void;
+  initialTab?: number;
 }
 
-const StakingModal: React.FC<StakingModalProps> = ({ selectedPair, isModalOpen, setIsModalOpen }) => {
-  const [tabValue, setTabValue] = useState(0);
+const StakingModal: React.FC<StakingModalProps> = ({ 
+  selectedPair, 
+  isModalOpen, 
+  setIsModalOpen, 
+  initialTab = 0 
+}) => {
+  const [tabValue, setTabValue] = useState(initialTab);
   const [stakePercent, setStakePercent] = useState<number>(100);
   const [unstakePercent, setUnstakePercent] = useState<number>(100);
   const [stakeAmount, setStakeAmount] = useState<string>('');
@@ -121,6 +127,12 @@ const StakingModal: React.FC<StakingModalProps> = ({ selectedPair, isModalOpen, 
     const stakedAmount = (selectedPair.myShare * selectedPair.tvl) / 100;
     setUnstakeAmount(((unstakePercent * stakedAmount) / 100).toString());
   }, [unstakePercent, selectedPair]);
+
+  useEffect(() => {
+    if (isModalOpen) {
+      setTabValue(initialTab);
+    }
+  }, [isModalOpen, initialTab]);
 
   if (!selectedPair || !tokenInfo) return null;
 
