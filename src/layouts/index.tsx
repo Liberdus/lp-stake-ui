@@ -6,7 +6,7 @@ import NotifySnackBar from '@/components/NotifySnackBar';
 import NetworkWarning from '@/components/NetworkWarning';
 import { useEffect } from 'react';
 import { useChainId } from 'wagmi';
-import { REQUIRED_CHAIN_ID } from '@/constants/chains';
+import { TARGET_CHAIN_ID } from '@/constants/networks';
 
 const Layout: React.FC = () => {
   const chainId = useChainId();
@@ -15,7 +15,7 @@ const Layout: React.FC = () => {
     localStorage.setItem('lastVisit', new Date().getTime().toString());
   }, []);
 
-  if (chainId !== REQUIRED_CHAIN_ID) {
+  if (chainId !== TARGET_CHAIN_ID) {
     return <NetworkWarning />;
   }
 
