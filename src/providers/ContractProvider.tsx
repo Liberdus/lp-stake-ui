@@ -282,8 +282,8 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
     try {
       if (!contract) throw new Error('Contract not initialized');
       console.log(lpToken, amount);
-      // const tx = await contract.unstake(lpToken, ethers.parseEther(amount));
-      // await tx.wait();
+      const tx = await contract.unstake(lpToken, ethers.parseEther(amount));
+      await tx.wait();
     } catch (err: any) {
       const errorMessage = err.reason || 'Failed to unstake';
       setError(new Error(errorMessage));
