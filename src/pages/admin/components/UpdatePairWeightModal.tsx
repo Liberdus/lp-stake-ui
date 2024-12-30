@@ -14,7 +14,7 @@ const UpdatePairWeightModal: React.FC<UpdatePairWeightModalProps> = ({ open, onC
   const [updatePairWeights, setUpdatePairWeights] = useState<string[]>(['']);
   const [maxWeight, setMaxWeight] = useState<number>();
   const [error, setError] = useState<string>('');
-  const [availablePairs, setAvailablePairs] = useState<{address: string, pairName: string, platform: string, weight: string}[]>([]);
+  const [availablePairs, setAvailablePairs] = useState<{ address: string; pairName: string; platform: string; weight: string }[]>([]);
 
   const { proposeUpdatePairWeights, getMaxWeight, getPairs } = useContract();
 
@@ -23,7 +23,12 @@ const UpdatePairWeightModal: React.FC<UpdatePairWeightModalProps> = ({ open, onC
       const maxWeight = await getMaxWeight();
       setMaxWeight(Number(maxWeight));
       const pairs = await getPairs();
-      const pairsWithWeights = pairs.map((pair) => ({ address: pair.lpToken, pairName: pair.pairName, platform: pair.platform, weight: pair.weight.toString() }));
+      const pairsWithWeights = pairs.map((pair) => ({
+        address: pair.lpToken,
+        pairName: pair.pairName,
+        platform: pair.platform,
+        weight: ethers.formatUnits(pair.weight, 18),
+      }));
       setAvailablePairs(pairsWithWeights);
     }
     loadContractData();
@@ -56,9 +61,7 @@ const UpdatePairWeightModal: React.FC<UpdatePairWeightModalProps> = ({ open, onC
 
     // Validate weights
     if (maxWeight) {
-      const validWeights = updatePairWeights.every((weight) => 
-        weight !== '' && Number(weight) <= Number(maxWeight) && Number(weight) >= 0
-      );
+      const validWeights = updatePairWeights.every((weight) => weight !== '' && Number(weight) <= Number(maxWeight) && Number(weight) >= 0);
 
       if (!validWeights) {
         setError(`Weights must be between 0 and ${maxWeight}`);
@@ -96,7 +99,7 @@ const UpdatePairWeightModal: React.FC<UpdatePairWeightModalProps> = ({ open, onC
                     onChange={(e) => {
                       const newAddresses = [...updatePairAddresses];
                       newAddresses[index] = e.target.value;
-                      const selectedPair = availablePairs.find(pair => pair.address === e.target.value);
+                      const selectedPair = availablePairs.find((pair) => pair.address === e.target.value);
                       const newWeights = [...updatePairWeights];
                       newWeights[index] = selectedPair ? selectedPair.weight : '';
                       setUpdatePairAddresses(newAddresses);
@@ -107,12 +110,12 @@ const UpdatePairWeightModal: React.FC<UpdatePairWeightModalProps> = ({ open, onC
                   >
                     <MenuItem value="">Select an address</MenuItem>
                     {availablePairs
-                      .filter(pair => !updatePairAddresses.includes(pair.address) || pair.address === address)
+                      .filter((pair) => !updatePairAddresses.includes(pair.address) || pair.address === address)
                       .map((pair) => (
                         <MenuItem key={pair.address} value={pair.address}>
                           {pair.pairName} ({pair.platform})
                         </MenuItem>
-                    ))}
+                      ))}
                   </TextField>
                   <TextField
                     type="number"
