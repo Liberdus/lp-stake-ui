@@ -1,7 +1,9 @@
 import ModalBox from '@/components/ModalBox';
 import { useContract } from '@/providers/ContractProvider';
+import { refetchAtom } from '@/store/refetch';
 import { Alert, Box, Button, Card, CardActions, CardContent, Modal, Stack, TextField, Typography, MenuItem } from '@mui/material';
 import { ethers } from 'ethers';
+import { useAtom } from 'jotai';
 import { useEffect, useState } from 'react';
 
 interface UpdatePairWeightModalProps {
@@ -17,22 +19,27 @@ const UpdatePairWeightModal: React.FC<UpdatePairWeightModalProps> = ({ open, onC
   const [availablePairs, setAvailablePairs] = useState<{ address: string; pairName: string; platform: string; weight: string }[]>([]);
 
   const { proposeUpdatePairWeights, getMaxWeight, getPairs } = useContract();
+  const [refetch, setRefetch] = useAtom(refetchAtom);
+
+  async function loadContractData() {
+    const maxWeight = await getMaxWeight();
+    setMaxWeight(Number(maxWeight));
+    const pairs = await getPairs();
+    const pairsWithWeights = pairs.map((pair) => ({
+      address: pair.lpToken,
+      pairName: pair.pairName,
+      platform: pair.platform,
+      weight: ethers.formatUnits(pair.weight, 18),
+    }));
+    setAvailablePairs(pairsWithWeights);
+  }
 
   useEffect(() => {
-    async function loadContractData() {
-      const maxWeight = await getMaxWeight();
-      setMaxWeight(Number(maxWeight));
-      const pairs = await getPairs();
-      const pairsWithWeights = pairs.map((pair) => ({
-        address: pair.lpToken,
-        pairName: pair.pairName,
-        platform: pair.platform,
-        weight: ethers.formatUnits(pair.weight, 18),
-      }));
-      setAvailablePairs(pairsWithWeights);
+    if (refetch) {
+      loadContractData();
+      setRefetch(false);
     }
-    loadContractData();
-  }, []);
+  }, [refetch]);
 
   const handleAddPairWeight = () => {
     setUpdatePairAddresses([...updatePairAddresses, '']);

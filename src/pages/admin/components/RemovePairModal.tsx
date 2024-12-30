@@ -1,7 +1,9 @@
 import ModalBox from '@/components/ModalBox';
 import { useContract } from '@/providers/ContractProvider';
+import { refetchAtom } from '@/store/refetch';
 import { Alert, Button, Card, CardActions, CardContent, Modal, Stack, Typography, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
 import { ethers } from 'ethers';
+import { useAtom } from 'jotai';
 import { useEffect, useState } from 'react';
 
 interface RemovePairModalProps {
@@ -12,9 +14,10 @@ interface RemovePairModalProps {
 const RemovePairModal: React.FC<RemovePairModalProps> = ({ open, onClose }) => {
   const [removePairAddress, setRemovePairAddress] = useState<string>('');
   const [error, setError] = useState<string>('');
-  const [availablePairs, setAvailablePairs] = useState<{address: string, pairName: string, platform: string, weight: string}[]>([]);
+  const [availablePairs, setAvailablePairs] = useState<{ address: string; pairName: string; platform: string; weight: string }[]>([]);
   const { proposeRemovePair, getPairs } = useContract();
-  
+  const [refetch, setRefetch] = useAtom(refetchAtom);
+
   const validateInput = (): boolean => {
     if (!removePairAddress) {
       setError('Please select an LP token');
@@ -39,14 +42,18 @@ const RemovePairModal: React.FC<RemovePairModalProps> = ({ open, onClose }) => {
     }
   };
 
+  async function loadContractData() {
+    const pairs = await getPairs();
+    const pairsWithWeights = pairs.map((pair) => ({ address: pair.lpToken, pairName: pair.pairName, platform: pair.platform, weight: pair.weight.toString() }));
+    setAvailablePairs(pairsWithWeights);
+  }
+
   useEffect(() => {
-    async function loadContractData() {
-      const pairs = await getPairs();
-      const pairsWithWeights = pairs.map((pair) => ({ address: pair.lpToken, pairName: pair.pairName, platform: pair.platform, weight: pair.weight.toString() }));
-      setAvailablePairs(pairsWithWeights);
+    if (refetch) {
+      loadContractData();
+      setRefetch(false);
     }
-    loadContractData();
-  }, []);
+  }, [refetch]);
 
   return (
     <Modal open={open} onClose={onClose}>
@@ -66,11 +73,7 @@ const RemovePairModal: React.FC<RemovePairModalProps> = ({ open, onClose }) => {
 
               <FormControl fullWidth>
                 <InputLabel>Select LP Token</InputLabel>
-                <Select
-                  value={removePairAddress}
-                  onChange={(e) => setRemovePairAddress(e.target.value)}
-                  label="Select LP Token"
-                >
+                <Select value={removePairAddress} onChange={(e) => setRemovePairAddress(e.target.value)} label="Select LP Token">
                   {availablePairs?.map((pair) => (
                     <MenuItem key={pair.address} value={pair.address}>
                       {pair.pairName} ({pair.platform})
