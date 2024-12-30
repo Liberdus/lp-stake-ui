@@ -48,12 +48,7 @@ interface ContractContextType {
   }>;
 
   // Pair info
-  getPairInfo: (lpToken: string) => Promise<{
-    token: string;
-    platform: string;
-    weight: bigint;
-    isActive: boolean;
-  }>;
+  getPairInfo: (address: string) => Promise<SCPairData>;
   getPairs: () => Promise<SCPairData[]>;
 
   // Contract state
@@ -102,7 +97,7 @@ const ContractContext = createContext<ContractContextType>({
   executeAction: async () => {},
   getPendingRewards: async () => 0n,
   getUserStakeInfo: async () => ({ amount: BigInt(0), pendingRewards: BigInt(0), lastRewardTime: BigInt(0) }),
-  getPairInfo: async () => ({ token: '', platform: '', weight: BigInt(0), isActive: false }),
+  getPairInfo: async () => ({ lpToken: '', pairName: '', platform: '', weight: BigInt(0), isActive: false }),
   getPairs: async () => [],
   getHourlyRewardRate: async () => BigInt(0),
   getContractAddress: async () => '',
@@ -416,15 +411,15 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
   };
 
   // Pair info
-  const getPairInfo = async (lpToken: string) => {
+  const getPairInfo = async (address: string) => {
     try {
       if (!contract) throw new Error('Contract not initialized');
-      const [token, platform, weight, isActive] = await contract.pairs(lpToken);
-      return { token, platform, weight, isActive };
+      const [lpToken, pairName, platform, weight, isActive] = await contract.pairs(address);
+      return { lpToken, pairName, platform, weight, isActive };
     } catch (err: any) {
       const errorMessage = err.reason || 'Failed to get pair info';
       setError(new Error(errorMessage));
-      return { token: '', platform: '', weight: BigInt(0), isActive: false };
+      return { lpToken: '', pairName: '', platform: '', weight: BigInt(0), isActive: false };
     }
   };
 

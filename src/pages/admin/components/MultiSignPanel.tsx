@@ -46,7 +46,8 @@ const MultiSignPanel: React.FC<MultiSignPanelProps> = () => {
   const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set());
   const [hideExecuted, setHideExecuted] = useState<boolean>(true);
   const [refetch, setRefetch] = useAtom(refetchAtom);
-  const { contract, approveAction, executeAction, rejectAction, getActionCounter, getRequiredApprovals, getActions, getActionPairs, getActionWeights } = useContract();
+  const { contract, approveAction, executeAction, rejectAction, getActionCounter, getRequiredApprovals, getActions, getActionPairs, getActionWeights, getPairInfo } = useContract();
+  const [names, setNames] = useState<{ [key: string]: string }>({});
 
   async function loadContractData() {
     setIsLoading(true);
@@ -58,6 +59,26 @@ const MultiSignPanel: React.FC<MultiSignPanelProps> = () => {
         const proposal = await getActions(i);
         const pairs = await getActionPairs(i);
         const weights = await getActionWeights(i);
+
+        const pairsToFetch = new Set<string>();
+        if (proposal.pairToRemove && proposal.pairToRemove !== ethers.ZeroAddress) {
+          pairsToFetch.add(proposal.pairToRemove);
+        }
+        if (pairs.length > 0) {
+          pairs.forEach((pair) => {
+            if (pair !== ethers.ZeroAddress) {
+              pairsToFetch.add(pair);
+            }
+          });
+        }
+
+        const pairInfos = await Promise.all(Array.from(pairsToFetch).map((pair) => getPairInfo(pair)));
+
+        setNames((prevNames) => ({
+          ...prevNames,
+          ...Object.fromEntries(Array.from(pairsToFetch).map((pair, i) => [pair, pairInfos[i].pairName])),
+        }));
+
         tmpProposals.push({
           id: i,
           actionType: proposal.actionType,
@@ -88,6 +109,8 @@ const MultiSignPanel: React.FC<MultiSignPanelProps> = () => {
       setRefetch(false);
     }
   }
+
+  console.log(names);
 
   useEffect(() => {
     loadContractData();
@@ -259,7 +282,7 @@ const MultiSignPanel: React.FC<MultiSignPanelProps> = () => {
                                   <Grid item xs={12}>
                                     <Typography variant="body2">
                                       <strong>{proposal.actionType.toString() !== '4' ? 'Pair to Remove: ' : 'New Signer: '}</strong>
-                                      {truncateAddress(proposal.pairToRemove)}
+                                      {truncateAddress(proposal.pairToRemove)} {names[proposal.pairToRemove]} {proposal.actionType === 3 ? proposal.pairNameToAdd : ''}
                                     </Typography>
                                   </Grid>
                                 )}
@@ -298,18 +321,11 @@ const MultiSignPanel: React.FC<MultiSignPanelProps> = () => {
                                     </Typography>
                                   </Grid>
                                 )}
-                                {proposal.pairs?.length > 0 && (
+                                {proposal.pairs?.length > 0 && proposal.actionType !== 1 && (
                                   <Grid item xs={12}>
-                                    <Typography variant="body2">
-                                      <strong>Pairs:</strong> {proposal.pairs.map((pair) => truncateAddress(pair)).join(', ')}
-                                    </Typography>
-                                  </Grid>
-                                )}
-                                {proposal.weights?.length > 0 && (
-                                  <Grid item xs={12}>
-                                    <Typography variant="body2">
-                                      <strong>Weights:</strong> {proposal.weights.map((weight) => ethers.formatEther(weight.toString())).join(', ')}
-                                    </Typography>
+                                    <Box component="pre" sx={{ mt: 1, fontFamily: 'monospace', whiteSpace: 'pre-wrap' }}>
+                                      {proposal.pairs.map((pair, idx) => `${pair}\t${names[pair]}\t${proposal.weights?.[idx] ? ethers.formatEther(proposal.weights[idx].toString()) : ''}\n`).join('')}
+                                    </Box>
                                   </Grid>
                                 )}
                               </Grid>
