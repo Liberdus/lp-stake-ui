@@ -1,4 +1,15 @@
-export const TARGET_CHAIN_ID = 80002;
+export const TARGET_CHAIN_ID = 31337;
+
+export const HARDHAT = {
+  chainId: `0x${(31337).toString(16)}`,
+  chainName: 'Hardhat',
+  nativeCurrency: {
+    name: 'ETH',
+    symbol: 'ETH',
+    decimals: 18,
+  },
+  rpcUrls: ['http://localhost:8545'],
+};
 
 export const POLYGON_AMOY = {
   chainId: `0x${(80002).toString(16)}`,
@@ -24,7 +35,7 @@ export const POLYGON_MAINNET = {
   blockExplorerUrls: ['https://polygonscan.com/'],
 };
 
-export const TARGET_CHAIN = TARGET_CHAIN_ID === 80002 ? POLYGON_AMOY : POLYGON_MAINNET;
+export const TARGET_CHAIN = TARGET_CHAIN_ID === 31337 ? HARDHAT : TARGET_CHAIN_ID === 80002 ? POLYGON_AMOY : POLYGON_MAINNET;
 
 export const switchNetwork = async () => {
   try {
