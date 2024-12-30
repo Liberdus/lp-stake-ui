@@ -193,7 +193,7 @@ const MultiSignPanel: React.FC<MultiSignPanelProps> = () => {
               </TableHead>
               <TableBody>
                 {filteredProposals.map((proposal, index) => {
-                  const actionId = actionCounter! - index;
+                  const actionId = proposal.id;
                   const isExecuted = proposal.executed;
                   const canExecute = !isExecuted && requiredApprovals && proposal.approvals && proposal.approvals >= requiredApprovals;
                   const isExpanded = expandedRows.has(actionId);
