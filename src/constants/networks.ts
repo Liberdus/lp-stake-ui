@@ -1,4 +1,4 @@
-export const TARGET_CHAIN_ID = 31337;
+export const TARGET_CHAIN_ID = 80002;
 
 const CHAIN_CONFIGS = {
   31337: {
