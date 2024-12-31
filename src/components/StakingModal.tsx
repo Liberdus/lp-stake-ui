@@ -7,7 +7,7 @@ import { Box, Typography, Slider, Stack, DialogContent, Tab, Divider } from '@mu
 import { Dialog, Tabs, TextField } from '@mui/material';
 import { ethers } from 'ethers';
 import { useAtom } from 'jotai';
-import { SetStateAction, useEffect, useState } from 'react';
+import { SetStateAction, useEffect, useState, useRef } from 'react';
 import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
 import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 import CloseIcon from '@mui/icons-material/Close';
@@ -42,6 +42,10 @@ const StakingModal: React.FC<StakingModalProps> = ({ selectedPair, isModalOpen, 
   const { stake, unstake, claimRewards, getTokenInfo, getERC20Balance, getPendingRewards, getUserStakeInfo } = useContract();
   const signer = useEthersSigner();
 
+  // Add flags to track user interaction source
+  const isStakeSliderChange = useRef(false);
+  const isUnstakeSliderChange = useRef(false);
+
   const handleStake = async () => {
     if (!selectedPair) return;
     const amount = stakeAmount || ((stakePercent * balance) / 100).toString();
@@ -69,6 +73,7 @@ const StakingModal: React.FC<StakingModalProps> = ({ selectedPair, isModalOpen, 
   };
 
   const handleStakeAmountChange = (value: string) => {
+    isStakeSliderChange.current = false;
     if (!value) {
       setStakeAmount('');
       setStakePercent(0);
@@ -86,7 +91,8 @@ const StakingModal: React.FC<StakingModalProps> = ({ selectedPair, isModalOpen, 
   };
 
   const handleUnstakeAmountChange = (value: string) => {
-    if (!selectedPair) return;
+    isUnstakeSliderChange.current = false;
+    if (!selectedPair || !userStakeInfo) return;
     if (!value) {
       setUnstakeAmount('');
       setUnstakePercent(0);
@@ -94,7 +100,7 @@ const StakingModal: React.FC<StakingModalProps> = ({ selectedPair, isModalOpen, 
     }
     const numValue = Number(value);
     if (isNaN(numValue) || numValue < 0) return;
-    const stakedAmount = (selectedPair.myShare * selectedPair.tvl) / 100;
+    const stakedAmount = Number(ethers.formatEther(userStakeInfo.amount));
     if (numValue > stakedAmount) {
       setUnstakeAmount(stakedAmount.toString());
       setUnstakePercent(100);
@@ -121,16 +127,14 @@ const StakingModal: React.FC<StakingModalProps> = ({ selectedPair, isModalOpen, 
   }, [selectedPair, signer]);
 
   useEffect(() => {
-    if (!balance) return;
+    if (!balance || !isStakeSliderChange.current) return;
     setStakeAmount(((stakePercent * balance) / 100).toString());
   }, [stakePercent, balance]);
 
   useEffect(() => {
-    async function fetchStakedAmount() {
-      if (!userStakeInfo) return;
-      setUnstakeAmount(((unstakePercent * Number(ethers.formatEther(userStakeInfo.amount))) / 100).toString());
-    }
-    fetchStakedAmount();
+    if (!userStakeInfo || !isUnstakeSliderChange.current) return;
+    const stakedAmount = Number(ethers.formatEther(userStakeInfo.amount));
+    setUnstakeAmount(((unstakePercent * stakedAmount) / 100).toString());
   }, [unstakePercent, userStakeInfo]);
 
   useEffect(() => {
@@ -180,7 +184,10 @@ const StakingModal: React.FC<StakingModalProps> = ({ selectedPair, isModalOpen, 
               <Box sx={{ px: 2 }}>
                 <Slider
                   value={stakePercent}
-                  onChange={(_: any, value: number | number[]) => setStakePercent(value as number)}
+                  onChange={(_: any, value: number | number[]) => {
+                    isStakeSliderChange.current = true;
+                    setStakePercent(value as number);
+                  }}
                   valueLabelDisplay="auto"
                   valueLabelFormat={(value) => <div>{value}%</div>}
                   marks={[
@@ -249,7 +256,10 @@ const StakingModal: React.FC<StakingModalProps> = ({ selectedPair, isModalOpen, 
               <Box sx={{ px: 2 }}>
                 <Slider
                   value={unstakePercent}
-                  onChange={(_: any, value: number | number[]) => setUnstakePercent(value as number)}
+                  onChange={(_: any, value: number | number[]) => {
+                    isUnstakeSliderChange.current = true;
+                    setUnstakePercent(value as number);
+                  }}
                   valueLabelDisplay="auto"
                   valueLabelFormat={(value) => <div>{value}%</div>}
                   marks={[
