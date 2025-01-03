@@ -148,7 +148,7 @@ const MultiSignPanel: React.FC<MultiSignPanelProps> = () => {
     setExpandedRows(newExpandedRows);
   };
 
-  const filteredProposals = hideExecuted ? proposals.filter((p) => !p.executed) : proposals;
+  const filteredProposals = hideExecuted ? proposals.filter((p) => !p.executed && !p.rejected) : proposals;
 
   return (
     <Card elevation={3}>
