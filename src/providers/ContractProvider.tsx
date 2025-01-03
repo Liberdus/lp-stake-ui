@@ -263,7 +263,6 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
         await approveTx.wait();
       }
 
-      console.log(lpToken, amountInWei);
       // Proceed with staking
       const tx = await contract.stake(lpToken, amountInWei);
       await tx.wait();
@@ -276,7 +275,6 @@ export const ContractProvider = ({ children }: ContractProviderProps) => {
   const unstake = async (lpToken: string, amount: string) => {
     try {
       if (!contract) throw new Error('Contract not initialized');
-      console.log(lpToken, amount);
       const tx = await contract.unstake(lpToken, ethers.parseEther(amount));
       await tx.wait();
     } catch (err: any) {

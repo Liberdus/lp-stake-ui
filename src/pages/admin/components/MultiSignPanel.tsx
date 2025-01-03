@@ -110,8 +110,6 @@ const MultiSignPanel: React.FC<MultiSignPanelProps> = () => {
     }
   }
 
-  console.log(names);
-
   useEffect(() => {
     loadContractData();
   }, [contract]);
