@@ -56,3 +56,21 @@ The actions available through the admin interface are:
 - Withdraw the reward token to a specified address
 - Change one of the four signers; requires 3/5; the contract owner can also be one of the signers for this action
 - Multisig feature is managed by the contract itself and not done by different multisig contract
+
+## Setup
+
+1. Copy the environment variables from the example file:
+
+   ```bash
+   cp .env.example .env
+   ```
+
+2. Make sure `VITE_ENABLE_TESTNETS=true` is set in your `.env` file to enable testnet support (required for Polygon Amoy network).
+
+3. The application is configured to use Polygon Amoy (TARGET_CHAIN_ID = 80002) by default. To change the target network, modify the `TARGET_CHAIN_ID` in `src/constants/networks.ts`.
+
+4. Install dependencies and start the development server:
+   ```bash
+   npm install
+   npm run dev
+   ```
